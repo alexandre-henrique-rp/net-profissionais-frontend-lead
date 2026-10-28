@@ -1,0 +1,19 @@
+node_modules
+.DS_Store
+
+# projeto usa yarn — lockfile do npm é resíduo do scaffold create-tanstack-app
+package-lock.json
+dist
+dist-ssr
+*.local
+.env
+.nitro
+.tanstack
+.wrangler
+.output
+.vinxi
+__unconfig*
+todos.json
+
+# relatório do motor de specs
+.vitest-results.json

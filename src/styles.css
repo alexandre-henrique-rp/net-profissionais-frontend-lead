@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+/*
+ * Tokens extraídos da página `04. Ligth` do Penpot (projeto NetProfissionais_lead).
+ * Alterar aqui e não nas telas: os componentes só usam os nomes semânticos.
+ */
+@theme {
+	--font-sans: "Source Sans 3", "Source Sans Pro", ui-sans-serif, system-ui, sans-serif;
+
+	/* Marca NetProfissional */
+	--color-brand-50: #fee2e2;
+	--color-brand-500: #eb3a42;
+	--color-brand-600: #d60037;
+	--color-brand-ink: #4d484d;
+
+	/* Acento do item ativo */
+	--color-accent-50: #eef2ff;
+	--color-accent-200: #c7d2fe;
+	--color-accent-500: #4f46e5;
+
+	/* Ação primária */
+	--color-primary-500: #2563eb;
+
+	/* Neutros */
+	--color-canvas: #f8fafc;
+	--color-surface: #ffffff;
+	--color-line: #e2e8f0;
+	--color-line-strong: #cbd5e1;
+	--color-ink-strong: #0f172a;
+	--color-ink: #475569;
+	--color-ink-muted: #64748b;
+	/* Rótulo dos KPIs: o Penpot usa um cinza próprio (#6b7280), não o ink-muted. */
+	--color-ink-dim: #6b7280;
+	--color-ink-subtle: #94a3b8;
+	--color-ink-soft: #f1f5f9;
+
+	/* Semânticos */
+	--color-success-50: #dcfce7;
+	--color-success-500: #059669;
+	--color-success-600: #10b981;
+	--color-warning-50: #fef3c7;
+	--color-warning-200: #fde68a;
+	--color-warning-500: #d97706;
+	--color-info-50: #eff6ff;
+	--color-info-200: #bfdbfe;
+	--color-info-500: #0284c7;
+	/* Título do banner do Pool. */
+	--color-info-700: #1e40af;
+	--color-violet-50: #f5f3ff;
+	--color-violet-200: #ddd6fe;
+	--color-violet-500: #7c3aed;
+
+	--radius-xs: 4px;
+	--radius-sm: 6px;
+	--radius-md: 8px;
+	--radius-lg: 12px;
+	--radius-xl: 16px;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+	min-height: 100%;
+}
+
+body {
+	margin: 0;
+	background-color: var(--color-canvas);
+	color: var(--color-ink);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+}
