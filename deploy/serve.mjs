@@ -4,12 +4,48 @@
 // (roteamento client-side do TanStack Router).
 
 import { createReadStream, existsSync, statSync } from 'node:fs';
-import { createServer } from 'node:http';
+import { createServer, request } from 'node:http';
 import { extname, join, normalize, resolve, sep } from 'node:path';
 
 const root = resolve('dist');
 const assetsDir = join(root, 'assets');
 const port = Number(process.env.PORT ?? 3001);
+
+// Proxy same-origin de /api/* para os slots do backend (rede Docker
+// compartilhada). Tenta os upstreams em ordem em caso de falha de conexão —
+// durante um deploy blue-green sempre há um slot saudável.
+const upstreams = (
+	process.env.API_UPSTREAMS ??
+	'http://api-blue:3000,http://api-green:3000'
+)
+	.split(',')
+	.map((u) => new URL(u.trim()));
+
+function proxyApi(req, res, index = 0) {
+	const target = upstreams[index];
+	if (!target) {
+		res.writeHead(502, { 'Content-Type': 'application/json' });
+		res.end('{"success":false,"error":{"code":"API_UNAVAILABLE","message":"API indisponível"}}');
+		return;
+	}
+	const upstream = request(
+		{
+			hostname: target.hostname,
+			port: target.port,
+			path: req.url,
+			method: req.method,
+			headers: { ...req.headers, host: target.host },
+			timeout: 15000,
+		},
+		(reply) => {
+			res.writeHead(reply.statusCode ?? 502, reply.headers);
+			reply.pipe(res);
+		},
+	);
+	upstream.on('timeout', () => upstream.destroy(new Error('timeout')));
+	upstream.on('error', () => proxyApi(req, res, index + 1));
+	req.pipe(upstream);
+}
 
 const types = {
 	'.css': 'text/css; charset=utf-8',
@@ -32,6 +68,12 @@ const types = {
 
 createServer((req, res) => {
 	const pathname = decodeURIComponent((req.url ?? '/').split('?')[0]);
+
+	if (pathname === '/api' || pathname.startsWith('/api/')) {
+		proxyApi(req, res);
+		return;
+	}
+
 	let file = normalize(join(root, pathname));
 
 	if (file !== root && !file.startsWith(root + sep)) {

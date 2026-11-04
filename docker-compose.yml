@@ -1,15 +1,26 @@
 name: net-profissionais-frontend-lead
 
 # Container único que serve o build SPA na porta PORTA (padrão 3001), sem
-# proxy interno — quem faz proxy, se necessário, é o Nginx do servidor.
+# proxy interno — quem faz proxy público, se necessário, é o Nginx do
+# servidor. O serve.mjs repassa /api/* aos slots do backend na rede Docker
+# compartilhada, então o bundle pode usar caminho relativo (sem CORS).
 services:
   frontend:
     build:
       context: .
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api/v1}
+        VITE_API_URL: ${VITE_API_URL:-/api/v1}
     image: netprofissionais-frontend-build:latest
     container_name: netprofissional-frontend
     restart: unless-stopped
+    environment:
+      API_UPSTREAMS: ${API_UPSTREAMS:-http://api-blue:3000,http://api-green:3000}
     ports:
       - "${PORTA:-3001}:3001"
+    networks:
+      - api
+
+networks:
+  api:
+    name: net-profissionais-backend-lead_api
+    external: true

@@ -12,7 +12,7 @@
 #   ./deploy.sh atualizar  → executa tudo direto, sem menu
 #
 # Variáveis opcionais:
-#   VITE_API_URL → URL da API gravada no bundle (padrão: http://localhost:3000/api/v1)
+#   VITE_API_URL → base da API no bundle (padrão: /api/v1, mesmo domínio)
 #   PORTA        → porta do host onde o SPA responde (padrão: 3001)
 #   CONTAINER    → nome do container (padrão: netprofissional-frontend)
 
@@ -24,7 +24,7 @@ cd "$DIR"
 PROJECT="net-profissionais-frontend-lead"
 CONTAINER="${CONTAINER:-netprofissional-frontend}"
 PORTA="${PORTA:-3001}"
-VITE_API_URL="${VITE_API_URL:-http://localhost:3000/api/v1}"
+VITE_API_URL="${VITE_API_URL:-/api/v1}"
 
 if docker compose version >/dev/null 2>&1; then
 	COMPOSE=(docker compose --project-name "$PROJECT" --file "$DIR/docker-compose.yml")
@@ -50,6 +50,8 @@ atualizar() {
 
 	echo
 	echo "== 3/4 · recriando o container $CONTAINER na porta $PORTA =="
+	docker network inspect net-profissionais-backend-lead_api >/dev/null 2>&1 || \
+		docker network create net-profissionais-backend-lead_api >/dev/null
 	compose up -d --force-recreate frontend
 
 	echo

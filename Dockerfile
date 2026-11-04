@@ -15,7 +15,7 @@ COPY . .
 
 # A URL da API é gravada no bundle em tempo de build
 # (src/lib/api.ts lê import.meta.env.VITE_API_URL).
-ARG VITE_API_URL=http://localhost:3000/api/v1
+ARG VITE_API_URL=/api/v1
 ENV VITE_API_URL=${VITE_API_URL}
 
 RUN yarn build
