@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# deploy.sh — gera o build do frontend numa pasta local e encerra.
+# deploy.sh — builda o frontend e sobe um container servindo o SPA.
 #
 # Fluxo de "Atualizar":
 #   1. git pull (recebe o código mais recente)
-#   2. docker build da imagem de build (instala libs + vite build)
-#   3. roda o container uma vez: ele copia o dist/ para ./build e termina
+#   2. docker build da imagem (instala libs + vite build + runtime node)
+#   3. recria o container "netprofissional-frontend" servindo na porta definida por PORTA (padrão 8080)
 #   4. limpeza das imagens Docker não utilizadas
 #
 # Uso:
@@ -13,7 +13,9 @@
 #
 # Variáveis opcionais:
 #   VITE_API_URL → URL da API gravada no bundle (padrão: http://localhost:3000/api/v1)
-#   IMAGEM       → nome da imagem de build (padrão: net-profissionais-frontend-build)
+#   PORTA        → porta do host onde o SPA responde (padrão: 8080)
+#   IMAGEM       → nome da imagem (padrão: net-profissionais-frontend-build)
+#   CONTAINER    → nome do container (padrão: netprofissional-frontend)
 
 set -euo pipefail
 
@@ -21,7 +23,8 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
 
 IMAGEM="${IMAGEM:-net-profissionais-frontend-build}"
-BUILD_DIR="$DIR/build"
+CONTAINER="${CONTAINER:-netprofissional-frontend}"
+PORTA="${PORTA:-8080}"
 VITE_API_URL="${VITE_API_URL:-http://localhost:3000/api/v1}"
 
 atualizar() {
@@ -34,16 +37,22 @@ atualizar() {
 	docker build --build-arg "VITE_API_URL=${VITE_API_URL}" -t "$IMAGEM" .
 
 	echo
-	echo "== 3/4 · gerando ./build (o container copia o dist/ e encerra) =="
-	mkdir -p "$BUILD_DIR"
-	docker run --rm --user "$(id -u):$(id -g)" -v "$BUILD_DIR:/output" "$IMAGEM"
+	echo "== 3/4 · recriando o container $CONTAINER na porta $PORTA =="
+	docker rm -f "$CONTAINER" >/dev/null 2>&1 || true
+	docker run -d --name "$CONTAINER" --restart unless-stopped \
+		-p "${PORTA}:3001" "$IMAGEM"
 
 	echo
 	echo "== 4/4 · limpeza das imagens não utilizadas =="
 	docker image prune -f
 
 	echo
-	echo "✔ Build disponível em $BUILD_DIR"
+	if command -v curl >/dev/null 2>&1 && \
+		curl --fail --silent --max-time 5 "http://127.0.0.1:${PORTA}/" >/dev/null; then
+		echo "✔ Frontend no ar em http://localhost:${PORTA}"
+	else
+		echo "Container $CONTAINER iniciado; verifique com: docker logs $CONTAINER"
+	fi
 }
 
 menu() {
@@ -52,7 +61,7 @@ menu() {
 		echo "┌──────────────────────────────────────────────────┐"
 		echo "│   NetProfissional — Build do Frontend            │"
 		echo "└──────────────────────────────────────────────────┘"
-		echo "  1) Atualizar (git pull → build → ./build → limpeza)"
+		echo "  1) Atualizar (git pull → build → container :8080 → limpeza)"
 		echo "  2) Sair"
 		echo
 		read -r -p "Escolha uma opção [1-2]: " opcao

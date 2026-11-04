@@ -21,13 +21,15 @@ ENV VITE_API_URL=${VITE_API_URL}
 RUN yarn build
 
 # -----------------------------------------------------------------------------
-# Estágio 2 — entrega: imagem mínima que copia o build para o volume /output
+# Estágio 2 — runtime: serve o dist/ diretamente na porta 3001 (sem proxy)
 # -----------------------------------------------------------------------------
-FROM alpine:3.20
-WORKDIR /build
-COPY --from=build /app/dist ./dist
+FROM node:24-alpine AS runtime
+WORKDIR /app
 
-# Monte aqui um volume nomeado ou uma pasta do host — o build é copiado na
-# subida do container, então funciona com os dois tipos de mount.
-VOLUME ["/output"]
-CMD ["sh", "-c", "rm -rf /output/* && cp -r /build/dist/. /output/ && echo 'Build entregue em /output'"]
+COPY --from=build --chown=node:node /app/dist ./dist
+COPY --chown=node:node deploy/serve.mjs ./deploy/serve.mjs
+
+ENV PORT=3001
+EXPOSE 3001
+USER node
+CMD ["node", "deploy/serve.mjs"]
