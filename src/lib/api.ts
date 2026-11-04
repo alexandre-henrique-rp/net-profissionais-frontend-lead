@@ -6,10 +6,11 @@
  * componente chama `fetch` diretamente.
  */
 
-/** Base da API. `VITE_API_URL` permite apontar para outro ambiente. */
-export const API_BASE_URL: string =
-	import.meta.env.VITE_API_URL?.replace(/\/+$/, "") ??
-	"http://localhost:3000/api/v1";
+/** Base da API (inclua o prefixo `/api/v1` em `VITE_API_URL`). */
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
+export const API_BASE_URL: string = (
+	configuredApiUrl || "http://localhost:3000/api/v1"
+).replace(/\/+$/, "");
 
 /** Valor aceito na query string. `undefined`, `null` e `""` são omitidos. */
 export type QueryValue = string | number | boolean | null | undefined;

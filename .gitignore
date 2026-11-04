@@ -7,6 +7,8 @@ dist
 dist-ssr
 *.local
 .env
+.env.*
+!.env.example
 .nitro
 .tanstack
 .wrangler
@@ -17,3 +19,9 @@ todos.json
 
 # relatório do motor de specs
 .vitest-results.json
+
+# artefatos do Playwright (homologação E2E)
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

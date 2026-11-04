@@ -380,6 +380,7 @@ export function useMoveLeadStage() {
 
 export interface CommercialTermsInput {
 	id: string;
+	version: number;
 	ticket_value?: number;
 	close_probability?: number;
 	expected_close_date?: string;
@@ -406,6 +407,7 @@ export function useSaveCommercialTerms() {
 
 export interface MarkLeadLostInput {
 	id: string;
+	version: number;
 	lossReasonCode: string;
 	lossReasonNotes?: string;
 }
@@ -415,10 +417,16 @@ export function useMarkLeadLost() {
 	const client = useQueryClient();
 
 	return useMutation({
-		mutationFn: ({ id, lossReasonCode, lossReasonNotes }: MarkLeadLostInput) =>
+		mutationFn: ({
+			id,
+			version,
+			lossReasonCode,
+			lossReasonNotes,
+		}: MarkLeadLostInput) =>
 			apiFetch<PipelineCard>(`/leads/${id}/mark-as-lost`, {
 				method: "POST",
 				body: {
+					version,
 					loss_reason_code: lossReasonCode,
 					loss_reason_notes: lossReasonNotes,
 				},

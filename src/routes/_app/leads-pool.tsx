@@ -30,6 +30,7 @@ import {
 	UF_OPTIONS,
 } from "#/features/leads-pool/data";
 import { ApiError } from "#/lib/api";
+import { firstNonBlankText } from "#/lib/display";
 import { type OperationalRole, useSession } from "#/lib/session";
 
 const leadsPoolSearchSchema = z.object({
@@ -48,7 +49,10 @@ const TEMPERATURE_TONE: Record<string, BadgeTone> = {
 };
 
 function companyNameOf(lead: PoolLeadItem): string {
-	return lead.lead.companyName ?? lead.lead.tradeName ?? "Empresa sem nome";
+	return (
+		firstNonBlankText(lead.lead.companyName, lead.lead.tradeName) ??
+		"Empresa sem nome"
+	);
 }
 
 function poolColumns(
@@ -99,6 +103,9 @@ function poolColumns(
 			render: (lead) => (
 				<div className="flex flex-col items-start gap-1.5">
 					<Badge tone="violet">{sectorLabel(lead.lead.sector)}</Badge>
+					{lead.customSector ? (
+						<Badge tone="neutral">{lead.customSector}</Badge>
+					) : null}
 					{lead.lead.temperature ? (
 						<Badge tone={TEMPERATURE_TONE[lead.lead.temperature] ?? "neutral"}>
 							{lead.lead.temperature === "QUENTE"
@@ -296,6 +303,14 @@ function LeadsPoolPage() {
 		? Math.max(1, Math.ceil(meta.total / Math.max(1, meta.limit)))
 		: 1;
 	const captureRows = pipeline.data ?? [];
+	const hasActiveFilters =
+		filters.q.trim() !== "" ||
+		filters.uf !== DEFAULT_POOL_FILTERS.uf ||
+		filters.sector !== DEFAULT_POOL_FILTERS.sector ||
+		filters.customSector.trim() !== "" ||
+		filters.companySize !== DEFAULT_POOL_FILTERS.companySize ||
+		filters.temperature !== DEFAULT_POOL_FILTERS.temperature ||
+		filters.page > 1;
 
 	return (
 		<>
@@ -434,6 +449,19 @@ function LeadsPoolPage() {
 									</select>
 								</label>
 							))}
+							<label className="flex items-center gap-2 text-xs font-semibold text-ink">
+								Categoria interna
+								<input
+									type="search"
+									aria-label="Filtrar por categoria interna"
+									placeholder="Ex.: instaladores"
+									value={filters.customSector}
+									onChange={(event) =>
+										updateFilters({ customSector: event.target.value })
+									}
+									className="h-10 w-36 rounded-md border border-line-strong bg-surface px-3"
+								/>
+							</label>
 						</div>
 
 						{pool.isPending ? (
@@ -456,12 +484,48 @@ function LeadsPoolPage() {
 							</div>
 						) : (
 							<>
-								<DataTable
-									columns={columns}
-									rows={poolRows}
-									rowKey={(lead) => lead.id}
-									emptyLabel="Nenhum lead corresponde aos filtros."
-								/>
+								{poolRows.length === 0 ? (
+									<div
+										aria-live="polite"
+										aria-atomic="true"
+										className="grid justify-items-center gap-3 px-5 py-10 text-center"
+									>
+										<p className="text-sm font-semibold text-ink-strong">
+											{hasActiveFilters
+												? "Nenhum lead corresponde aos filtros atuais."
+												: "O Pool de Leads está vazio no momento."}
+										</p>
+										{hasActiveFilters ? (
+											<>
+												<p className="max-w-md text-xs text-ink-muted">
+													Remova ou ajuste os filtros para consultar outros
+													leads.
+												</p>
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={() =>
+														setFilters({ ...DEFAULT_POOL_FILTERS })
+													}
+												>
+													Limpar filtros
+												</Button>
+											</>
+										) : (
+											<p className="max-w-md text-xs text-ink-muted">
+												Novas captações aparecerão aqui. Você também pode
+												cadastrar um lead manualmente.
+											</p>
+										)}
+									</div>
+								) : (
+									<DataTable
+										columns={columns}
+										rows={poolRows}
+										rowKey={(lead) => lead.id}
+										emptyLabel="Nenhum lead corresponde aos filtros."
+									/>
+								)}
 								{meta ? (
 									<div className="flex flex-wrap items-center justify-between gap-3 border-t border-line p-4 text-xs font-semibold text-ink-muted">
 										<span>

@@ -1,6 +1,12 @@
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DASHBOARD_ADMIN, installApiMock, mockFailures } from "#/test/apiMock";
+import {
+	DASHBOARD_ADMIN,
+	DASHBOARD_CAPTADOR,
+	DASHBOARD_SELLER,
+	installApiMock,
+	mockFailures,
+} from "#/test/apiMock";
 import { renderRoute } from "#/test/renderRoute";
 
 const testRole = vi.hoisted(() => ({ current: "ADMIN" }));
@@ -158,7 +164,7 @@ describe("dashboard", () => {
 		);
 	});
 
-	it("@spec:AC-147 o vendedor vê a agenda do dia e os aniversários da API", async () => {
+	it("@spec:AC-147 @spec:AC-192 o vendedor vê seu painel, agenda e aniversários da API", async () => {
 		testRole.current = "VENDEDOR";
 		const api = installApiMock();
 		renderRoute("/dashboard");
@@ -189,7 +195,121 @@ describe("dashboard", () => {
 		);
 	});
 
-	it("@spec:AC-148 o captador vê a situação das captações e os registros recentes da API", async () => {
+	it("@spec:AC-201 dashboard Admin sem leads mostra zeros e um caminho para o Pool", async () => {
+		const api = installApiMock();
+		api.set("GET /dashboard/admin", () => ({
+			body: {
+				success: true,
+				data: {
+					...DASHBOARD_ADMIN,
+					kpis: {
+						...DASHBOARD_ADMIN.kpis,
+						total_leads: 0,
+						leads_in_pool: 0,
+						leads_claimed: 0,
+						leads_won: 0,
+						leads_lost: 0,
+						conversion_rate: 0,
+						pipeline_total_value: 0,
+						won_total_value: 0,
+						average_ticket: 0,
+						inactivity_alerts: 0,
+					},
+					funnel: DASHBOARD_ADMIN.funnel.map((stage) => ({
+						...stage,
+						count: 0,
+						total_value: 0,
+					})),
+					loss_reasons: [],
+					sellers: [],
+				},
+			},
+		}));
+		renderRoute("/dashboard");
+
+		expect(
+			await screen.findByText(/Nenhum lead foi criado no período selecionado/),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("link", { name: "Abrir Pool de Leads" }),
+		).toHaveAttribute("href", "/leads-pool");
+		expect(screen.getAllByText("0 leads").length).toBeGreaterThan(0);
+		expect(screen.queryByText(/NaN|undefined/)).toBeNull();
+	});
+
+	it("@spec:AC-202 Vendedor sem carteira recebe um caminho para assumir leads", async () => {
+		testRole.current = "VENDEDOR";
+		const api = installApiMock();
+		api.set("GET /dashboard/seller", () => ({
+			body: {
+				success: true,
+				data: {
+					...DASHBOARD_SELLER,
+					kpis: {
+						...DASHBOARD_SELLER.kpis,
+						my_leads: 0,
+						my_won: 0,
+						my_lost: 0,
+						my_conversion_rate: 0,
+						my_pipeline_value: 0,
+						my_won_value: 0,
+						today_tasks: 0,
+						today_tasks_total: 0,
+					},
+					my_funnel: [],
+					today_tasks: [],
+					birthdays: [],
+				},
+			},
+		}));
+		renderRoute("/dashboard");
+
+		expect(
+			await screen.findByText("Nenhum lead na sua carteira no período."),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("link", { name: "Acessar Pool de Leads" }),
+		).toHaveAttribute("href", "/leads-pool");
+		expect(screen.queryByText(/NaN|undefined/)).toBeNull();
+	});
+
+	it("@spec:AC-202 Captador sem captações pode iniciar o primeiro cadastro", async () => {
+		testRole.current = "CAPTADOR";
+		const api = installApiMock();
+		api.set("GET /dashboard/captador", () => ({
+			body: {
+				success: true,
+				data: {
+					...DASHBOARD_CAPTADOR,
+					kpis: {
+						...DASHBOARD_CAPTADOR.kpis,
+						captured_total: 0,
+						captured_in_pool: 0,
+						captured_claimed: 0,
+						captured_won: 0,
+						conversion_rate: 0,
+						captured_total_value: 0,
+					},
+					by_status: [],
+					recent: [],
+				},
+			},
+		}));
+		renderRoute("/dashboard");
+
+		expect(
+			await screen.findByText("Você ainda não cadastrou leads."),
+		).toBeInTheDocument();
+		fireEvent.click(
+			screen.getByRole("link", { name: "Cadastrar primeira captação" }),
+		);
+		expect(
+			await screen.findByRole("dialog", { name: "Novo lead" }),
+		).toBeInTheDocument();
+		expect(screen.queryByText(/NaN|undefined/)).toBeNull();
+	});
+
+	it("@spec:AC-148 @spec:AC-208 o captador vê a situação das captações e os registros recentes da API", async () => {
 		testRole.current = "CAPTADOR";
 		const api = installApiMock();
 		renderRoute("/dashboard");

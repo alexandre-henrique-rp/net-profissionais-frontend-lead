@@ -2,30 +2,26 @@ interface Feature {
 	icon: string;
 	title: string;
 	description: string;
-	iconBg: string;
 }
 
 const FEATURES: Feature[] = [
 	{
-		icon: "⚡",
+		icon: "🏢",
 		title: "Enriquecimento Automático de Dados",
 		description:
-			"Identificação instantânea de empresas com Razão Social, sócios, CNAE e dados cadastrais da Receita.",
-		iconBg: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+			"Identificação instantânea de empresas com Razão Social, sócios e dados cadastrais.",
 	},
 	{
 		icon: "🎯",
 		title: "Funil Comercial & Gestão Ágil",
 		description:
-			"Pipeline visual em 7 etapas estratégicas com histórico de interações e pontuação preditiva.",
-		iconBg: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+			"Pipeline visual intuitivo com histórico de interações e acionamento direto via WhatsApp.",
 	},
 	{
 		icon: "🔐",
 		title: "Segurança Avançada & Privacidade",
 		description:
-			"Acesso protegido por perfil de usuário, isolamento estrito por tenant e total rastreabilidade.",
-		iconBg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+			"Acesso protegido por perfil de usuário, criptografia de dados e total conformidade com a LGPD.",
 	},
 ];
 
@@ -36,57 +32,56 @@ const FEATURES: Feature[] = [
  */
 export function LoginHero() {
 	return (
-		<div className="flex h-full flex-col justify-between">
-			<div className="flex flex-col">
-				<div className="flex items-center gap-3">
-					<div className="flex size-9 items-center justify-center rounded-lg bg-brand-500 text-sm font-black text-white shadow-sm">
-						NP
-					</div>
-					<div>
-						<span className="text-xl font-bold tracking-tight text-white">
-							NETProfissional
-						</span>
-						<p className="text-[11px] font-medium text-slate-400">
-							Gerador de Leads
-						</p>
-					</div>
+		<div className="flex h-full flex-col">
+			<header className="flex h-[51px] items-start gap-[10px]">
+				<img
+					src="/NP07.svg"
+					alt=""
+					aria-hidden="true"
+					className="h-[51px] w-16"
+				/>
+				<div className="flex flex-col">
+					<img
+						src="/NP08-light.svg"
+						alt="NETProfissional — Tecnologia para sua empresa"
+						className="h-[39px] w-[248px] max-w-full object-contain object-left"
+					/>
+				</div>
+			</header>
+
+			<div className="mt-[61px]">
+				<div className="inline-flex h-7 w-[320px] max-w-full items-center rounded-full border border-[#eb3a42] bg-[#fee2e2] px-[10px] text-[11px] font-semibold text-[#d60037]">
+					PROSPECÇÃO B2B • GESTÃO INTELIGENTE DE LEADS
 				</div>
 
-				<div className="mt-8">
-					<span className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-700/80 bg-slate-800/80 px-3.5 py-1.5 text-[11px] font-semibold text-slate-200">
-						<span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
-						PROSPECÇÃO B2B • GESTÃO INTELIGENTE DE LEADS
-					</span>
-				</div>
-
-				<h1 className="mt-5 text-[36px] font-normal leading-[1.18] tracking-tight text-white xl:text-[42px]">
+				<h1 className="mt-[18px] w-[372px] max-w-full text-[38px] font-normal leading-[1.2] tracking-tight text-[#4d484d]">
 					Gerador e Gerenciador
 					<br />
-					<span className="font-bold text-brand-500">Inteligente de Leads</span>
+					<span className="text-[#eb3a42]">Inteligente de Leads</span>
 				</h1>
 
-				<p className="mt-4 max-w-xl text-[14px] leading-relaxed text-slate-300">
+				<p className="mt-4 w-[374px] max-w-full text-[15px] leading-[24px] text-[#4d484d]">
 					Acelere as vendas da sua empresa com prospecção ativa, enriquecimento
 					automático de CNPJ e funil comercial ágil.
 				</p>
 
-				<ul className="mt-8 flex flex-col gap-3.5">
+				<ul className="mt-[38px] flex flex-col gap-4">
 					{FEATURES.map((feature) => (
 						<li
 							key={feature.title}
-							className="flex items-center gap-4 rounded-xl border border-slate-800 bg-[#121c31]/70 p-3.5 backdrop-blur-xs transition-colors hover:border-slate-700"
+							className="flex h-[82px] w-[560px] max-w-full items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-[17px] shadow-[0_4px_14px_rgba(0,0,0,0.07)]"
 						>
 							<span
 								aria-hidden
-								className={`flex size-11 shrink-0 items-center justify-center rounded-lg border text-lg ${feature.iconBg}`}
+								className="flex h-[46px] w-[50px] shrink-0 items-center justify-center rounded-[10px] border border-[#eb3a42] bg-[#fee2e2] text-xl"
 							>
 								{feature.icon}
 							</span>
-							<div>
-								<span className="block text-[14px] font-bold text-white">
+							<div className="min-w-0 xl:min-w-[489px]">
+								<span className="block text-[15px] leading-[18px] text-slate-800">
 									{feature.title}
 								</span>
-								<span className="block text-[12px] leading-snug text-slate-400">
+								<span className="mt-1 block text-[12px] leading-[15px] text-slate-500">
 									{feature.description}
 								</span>
 							</div>
@@ -95,7 +90,7 @@ export function LoginHero() {
 				</ul>
 			</div>
 
-			<p className="mt-12 text-[11px] text-slate-500">
+			<p className="mt-auto pt-6 text-[12px] leading-[15px] text-slate-500">
 				© 2026 NetProfissional Tecnologia • Todos os direitos reservados •
 				Política de Privacidade
 			</p>

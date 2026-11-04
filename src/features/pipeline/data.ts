@@ -6,6 +6,7 @@
  * devolve.
  */
 
+import { finiteNumberOrNull, firstNonBlankText } from "#/lib/display";
 import type { LeadDetail, PipelineCard } from "./api";
 
 /** Oportunidade usada nas ações de perda e de movimentação. */
@@ -18,11 +19,21 @@ export interface LeadTarget {
 /** Valores comerciais editáveis na gaveta. */
 export interface TermosComerciais {
 	id: string;
+	version: number;
 	companyName: string;
 	ticketValue: number | null;
 	closeProbability: number | null;
 	expectedCloseDate: string | null;
 	proposalScope: string | null;
+}
+
+function displayCompanyName(lead: {
+	company_name: string | null;
+	trade_name: string | null;
+}): string {
+	return (
+		firstNonBlankText(lead.company_name, lead.trade_name) ?? "Empresa sem nome"
+	);
 }
 
 /** Catálogo de motivos de perda aceito por `POST /leads/{id}/mark-as-lost`. */
@@ -49,36 +60,53 @@ export const TIPO_INTERACAO_LABEL: Record<string, string> = {
 };
 
 export function formatCurrency(value: number | null | undefined): string {
-	return `R$ ${(value ?? 0).toLocaleString("pt-BR", {
+	const amount = finiteNumberOrNull(value);
+	if (amount === null) return "—";
+
+	return `R$ ${amount.toLocaleString("pt-BR", {
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2,
 	})}`;
 }
 
 export function formatProbability(value: number | null | undefined): string {
-	return value === null || value === undefined ? "Sem estimativa" : `${value}%`;
+	const probability = finiteNumberOrNull(value);
+	return probability === null ? "Sem estimativa" : `${probability}%`;
 }
 
 /** `2026-11-30T00:00:00.000Z` ou `2026-11-30` → `30/11/2026`. */
 export function formatDateBR(value: string | null | undefined): string {
-	if (!value) return "Sem previsão";
-	const isoDate = value.slice(0, 10);
+	const normalized = firstNonBlankText(value);
+	if (!normalized) return "Sem previsão";
+	const isoDate = normalized.slice(0, 10);
 	const [year, month, day] = isoDate.split("-");
-	return year && month && day ? `${day}/${month}/${year}` : isoDate;
+	if (!year || !month || !day) return "Sem previsão";
+
+	const parsed = new Date(`${isoDate}T00:00:00Z`);
+	if (
+		Number.isNaN(parsed.getTime()) ||
+		parsed.toISOString().slice(0, 10) !== isoDate
+	) {
+		return "Sem previsão";
+	}
+
+	return `${day}/${month}/${year}`;
 }
 
 /** Formato aceito pelo `<input type="date">` (`AAAA-MM-DD`). */
 export function toDateInput(value: string | null | undefined): string {
-	return value ? value.slice(0, 10) : "";
+	const normalized = firstNonBlankText(value);
+	return normalized ? normalized.slice(0, 10) : "";
 }
 
 /** Nome exibido no card/gaveta: fantasia quando existe, senão a razão social. */
 export function cardCompanyName(card: PipelineCard): string {
-	return card.lead.company_name || card.lead.trade_name || "Oportunidade";
+	return displayCompanyName(card.lead);
 }
 
 export function cardLocation(card: PipelineCard): string {
-	const { city, state } = card.lead;
+	const city = firstNonBlankText(card.lead.city);
+	const state = firstNonBlankText(card.lead.state);
 	if (city && state) return `${city}/${state}`;
 	return city || state || "—";
 }
@@ -95,14 +123,14 @@ export function alvoDaFicha(detail: LeadDetail): LeadTarget {
 	return {
 		id: detail.id,
 		version: detail.version,
-		companyName:
-			detail.lead.company_name || detail.lead.trade_name || "Oportunidade",
+		companyName: displayCompanyName(detail.lead),
 	};
 }
 
 export function termosDoCard(card: PipelineCard): TermosComerciais {
 	return {
 		id: card.id,
+		version: card.version,
 		companyName: cardCompanyName(card),
 		ticketValue: card.ticket_value,
 		closeProbability: card.close_probability,
@@ -114,8 +142,8 @@ export function termosDoCard(card: PipelineCard): TermosComerciais {
 export function termosDaFicha(detail: LeadDetail): TermosComerciais {
 	return {
 		id: detail.id,
-		companyName:
-			detail.lead.company_name || detail.lead.trade_name || "Oportunidade",
+		version: detail.version,
+		companyName: displayCompanyName(detail.lead),
 		ticketValue: detail.ticket_value,
 		closeProbability: detail.close_probability,
 		expectedCloseDate: detail.expected_close_date,

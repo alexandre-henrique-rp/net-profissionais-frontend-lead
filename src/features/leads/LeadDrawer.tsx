@@ -18,6 +18,7 @@ import {
 	TIPO_INTERACAO_LABEL,
 	termosDaFicha,
 } from "#/features/pipeline/data";
+import { displayText, firstNonBlankText } from "#/lib/display";
 
 export interface LeadDrawerProps {
 	/** Card selecionado; `null` fecha a gaveta. */
@@ -32,7 +33,7 @@ function formatDateTime(value: string): string {
 	const date = new Date(value);
 
 	if (Number.isNaN(date.getTime())) {
-		return value;
+		return displayText(value, "—");
 	}
 
 	return date.toLocaleString("pt-BR", {
@@ -71,16 +72,30 @@ export function LeadDrawer({
 	}, [leadId]);
 
 	const lead = detail.data;
+	const contacts = Array.isArray(lead?.contacts) ? lead.contacts : [];
+	const specialDates = Array.isArray(lead?.special_dates)
+		? lead.special_dates
+		: [];
+	const leadTimeline = Array.isArray(lead?.timeline) ? lead.timeline : [];
 	const primaryContact =
-		lead?.contacts.find((contact) => contact.is_primary) ?? lead?.contacts[0];
-	const title = lead ? lead.lead.company_name : "Ficha do lead";
+		contacts.find((contact) => contact.is_primary) ?? contacts[0];
+	const title = lead
+		? (firstNonBlankText(lead.lead.company_name, lead.lead.trade_name) ??
+			"Empresa sem nome")
+		: "Ficha do lead";
 	const documentLabel = lead
-		? `${lead.lead.trade_name ? `${lead.lead.trade_name} · ` : ""}${
-				lead.lead.person_type === "PF" ? "CPF" : "CNPJ"
-			}: ${lead.lead.cnpj ?? lead.lead.cpf ?? "não informado"}`
+		? `${
+				firstNonBlankText(lead.lead.trade_name)
+					? `${firstNonBlankText(lead.lead.trade_name)} · `
+					: ""
+			}${lead.lead.person_type === "PF" ? "CPF" : "CNPJ"}: ${
+				firstNonBlankText(lead.lead.cnpj, lead.lead.cpf) ?? "não informado"
+			}`
 		: undefined;
 	const locationLabel = lead
-		? [lead.lead.city, lead.lead.state].filter(Boolean).join("/")
+		? [firstNonBlankText(lead.lead.city), firstNonBlankText(lead.lead.state)]
+				.filter(Boolean)
+				.join("/")
 		: "";
 	const timeline = lead
 		? [
@@ -94,7 +109,7 @@ export function LeadDrawer({
 						? { id: lead.assigned_user.id, name: lead.assigned_user.name }
 						: null,
 				})),
-				...lead.timeline,
+				...leadTimeline,
 			].filter(
 				(entry, index, all) =>
 					all.findIndex((item) => item.content === entry.content) === index,
@@ -108,7 +123,10 @@ export function LeadDrawer({
 			{ id: lead.id },
 			{
 				onSuccess: () => {
-					onUnlinked(lead.lead.company_name);
+					onUnlinked(
+						firstNonBlankText(lead.lead.company_name, lead.lead.trade_name) ??
+							"Empresa sem nome",
+					);
 					onClose();
 				},
 				onError: (error) => setActionError(errorMessage(error)),
@@ -237,29 +255,35 @@ export function LeadDrawer({
 							<span>👤</span>
 							<span>Contatos</span>
 						</h3>
-						{lead.contacts.length === 0 ? (
+						{contacts.length === 0 ? (
 							<p className="mt-3 text-xs text-ink-muted">
 								Nenhum contato cadastrado.
 							</p>
 						) : (
 							<ul className="mt-3 grid gap-2">
-								{lead.contacts.map((contact) => (
+								{contacts.map((contact) => (
 									<li
 										key={contact.id}
 										className="rounded-lg border border-line bg-surface p-3.5 shadow-xs"
 									>
 										<div className="flex flex-wrap items-center justify-between gap-2">
 											<p className="text-[13px] font-bold text-ink-strong">
-												{contact.name}
+												{displayText(contact.name, "Contato sem nome")}
 												{contact.is_decision_maker ? " (Decisor)" : ""}
 											</p>
-											{contact.role ? (
-												<Badge tone="accent">{contact.role}</Badge>
+											{firstNonBlankText(contact.role) ? (
+												<Badge tone="accent">
+													{firstNonBlankText(contact.role)}
+												</Badge>
 											) : null}
 										</div>
 										<p className="mt-1 text-xs text-ink-muted">
-											{contact.phone ? `📱 +${contact.phone}` : "Sem telefone"}
-											{contact.email ? ` • ✉️ ${contact.email}` : ""}
+											{firstNonBlankText(contact.phone)
+												? `📱 +${firstNonBlankText(contact.phone)}`
+												: "Sem telefone"}
+											{firstNonBlankText(contact.email)
+												? ` • ✉️ ${firstNonBlankText(contact.email)}`
+												: ""}
 										</p>
 									</li>
 								))}
@@ -271,19 +295,21 @@ export function LeadDrawer({
 						<h3 className="text-xs font-bold tracking-wider text-ink-strong uppercase">
 							Datas especiais
 						</h3>
-						{lead.special_dates.length === 0 ? (
+						{specialDates.length === 0 ? (
 							<p className="mt-2 text-xs text-ink-muted">
 								Nenhuma data especial cadastrada.
 							</p>
 						) : (
 							<ul className="mt-2 flex flex-wrap gap-2">
-								{lead.special_dates.map((date) => (
+								{specialDates.map((date) => (
 									<li
 										key={date.id}
 										className="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-800"
 									>
 										<span>🎂</span>
-										<span>{date.description}</span>
+										<span>
+											{displayText(date.description, "Data especial")}
+										</span>
 									</li>
 								))}
 							</ul>
@@ -298,19 +324,19 @@ export function LeadDrawer({
 							<div>
 								<dt className="text-ink-muted">CNPJ</dt>
 								<dd className="font-semibold text-ink-strong">
-									{lead.fiscal.cnpj ?? "—"}
+									{displayText(lead.fiscal.cnpj, "—")}
 								</dd>
 							</div>
 							<div>
 								<dt className="text-ink-muted">Porte</dt>
 								<dd className="font-semibold text-ink-strong">
-									{lead.fiscal.company_size ?? "—"}
+									{displayText(lead.fiscal.company_size, "—")}
 								</dd>
 							</div>
 							<div>
 								<dt className="text-ink-muted">CNAE</dt>
 								<dd className="font-semibold text-ink-strong">
-									{lead.fiscal.primary_cnae ?? "—"}
+									{displayText(lead.fiscal.primary_cnae, "—")}
 								</dd>
 							</div>
 							<div>
@@ -322,7 +348,7 @@ export function LeadDrawer({
 							<div className="col-span-2">
 								<dt className="text-ink-muted">Atividade</dt>
 								<dd className="font-semibold text-ink-strong">
-									{lead.fiscal.cnae_description ?? "—"}
+									{displayText(lead.fiscal.cnae_description, "—")}
 								</dd>
 							</div>
 						</dl>

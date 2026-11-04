@@ -18,18 +18,20 @@ export function AppShell({ children }: AppShellProps) {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 	return (
-		<div className="min-h-screen bg-canvas">
+		<div className="h-dvh w-screen overflow-hidden bg-canvas">
 			<Topbar
 				session={session}
 				onMenuToggle={() => setMobileMenuOpen((open) => !open)}
 			/>
-			<div className="flex min-h-[calc(100vh-56px)]">
+			<div className="flex h-[calc(100dvh-3.5rem)] min-h-0">
 				<Sidebar
 					session={session}
 					mobileOpen={mobileMenuOpen}
 					onMobileClose={() => setMobileMenuOpen(false)}
 				/>
-				<main className="min-w-0 flex-1 p-4 sm:px-7 sm:py-4">{children}</main>
+				<main className="h-full min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:px-7 sm:py-4">
+					{children}
+				</main>
 			</div>
 		</div>
 	);

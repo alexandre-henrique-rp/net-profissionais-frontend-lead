@@ -66,7 +66,7 @@ export function Sidebar({
 					mobileOpen
 						? "fixed inset-y-0 left-0 z-50 flex shadow-2xl"
 						: "hidden lg:flex"
-				} w-[250px] shrink-0 flex-col border-r border-[#e2e8f0] bg-white`}
+				} min-h-0 w-[250px] shrink-0 flex-col border-r border-[#e2e8f0] bg-white lg:h-full`}
 			>
 				{mobileOpen ? (
 					<div className="flex items-center justify-between border-b border-[#e2e8f0] px-4 py-3">

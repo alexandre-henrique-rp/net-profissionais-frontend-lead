@@ -1,62 +1,40 @@
-import { useMutation } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "#/components/layout/PageHeader";
 import { Button } from "#/components/ui/Button";
 import { Card } from "#/components/ui/Card";
 import { Field, TextInput } from "#/components/ui/Field";
-import { ApiError, apiFetch } from "#/lib/api";
+import { type CnpjLookup, useCnpjLookup } from "#/features/leads-pool/api";
+import { maskCnpj, onlyDigits } from "#/features/leads-pool/data";
+import { ApiError } from "#/lib/api";
 
 export const Route = createFileRoute("/_app/settings/cnpj")({
 	component: CnpjSettingsPage,
 });
-
-/** Contato do quadro societário devolvido pela API. */
-interface CnpjContact {
-	name: string;
-	role: string;
-	is_decision_maker: boolean;
-}
-
-/** Resposta de `GET /integrations/cnpj/{cnpj}`. */
-interface CnpjLookup {
-	company_name: string;
-	trade_name: string | null;
-	primary_cnae: string;
-	cnae_description: string;
-	capital_social: number;
-	postal_code: string;
-	street: string;
-	number: string;
-	complement: string | null;
-	neighborhood: string;
-	city: string;
-	state: string;
-	company_size: string;
-	sector: string;
-	contacts: CnpjContact[];
-}
 
 const CURRENCY = new Intl.NumberFormat("pt-BR", {
 	style: "currency",
 	currency: "BRL",
 });
 
-/** `12.345.678/0001-90` → `12345678000190`. */
-function onlyDigits(value: string): string {
-	return value.replace(/\D/g, "");
-}
-
 function formatAddress(data: CnpjLookup): string {
 	const street = [data.street, data.number].filter(Boolean).join(", ");
 	const complement = data.complement ? ` — ${data.complement}` : "";
+	const cityState = [data.city, data.state].filter(Boolean).join("/");
+	const details = [
+		street || null,
+		complement || null,
+		data.neighborhood,
+		cityState || null,
+		data.postalCode ? `CEP ${data.postalCode}` : null,
+	].filter(Boolean);
 
-	return `${street}${complement} · ${data.neighborhood} · ${data.city}/${data.state} · CEP ${data.postal_code}`;
+	return details.join(" · ") || "Endereço não informado";
 }
 
 function lookupErrorMessage(error: unknown): string {
 	if (error instanceof ApiError) {
-		if (error.status === 404 || error.code === "NOT_FOUND") {
+		if (error.status === 422 || error.code === "CNPJ_NOT_FOUND") {
 			return "CNPJ não encontrado na base da Receita Federal. Confira os dígitos e tente de novo.";
 		}
 
@@ -69,10 +47,7 @@ function lookupErrorMessage(error: unknown): string {
 function CnpjSettingsPage() {
 	const [cnpj, setCnpj] = useState("");
 	const [validation, setValidation] = useState("");
-	const lookup = useMutation({
-		mutationFn: (digits: string) =>
-			apiFetch<CnpjLookup>(`/integrations/cnpj/${digits}`),
-	});
+	const lookup = useCnpjLookup();
 
 	function search() {
 		const digits = onlyDigits(cnpj);
@@ -139,8 +114,10 @@ function CnpjSettingsPage() {
 								<TextInput
 									required
 									invalid={validation !== ""}
+									inputMode="numeric"
+									maxLength={18}
 									value={cnpj}
-									onChange={(event) => setCnpj(event.target.value)}
+									onChange={(event) => setCnpj(maskCnpj(event.target.value))}
 									placeholder="00.000.000/0000-00"
 								/>
 							</Field>
@@ -177,7 +154,7 @@ function CnpjSettingsPage() {
 									Razão social
 								</span>
 								<strong className="text-sm text-ink-strong">
-									{data.company_name}
+									{data.companyName ?? "—"}
 								</strong>
 							</p>
 							<p>
@@ -185,7 +162,7 @@ function CnpjSettingsPage() {
 									Nome fantasia
 								</span>
 								<strong className="text-sm text-ink-strong">
-									{data.trade_name ?? "—"}
+									{data.tradeName ?? "—"}
 								</strong>
 							</p>
 							<p>
@@ -193,7 +170,9 @@ function CnpjSettingsPage() {
 									Capital social
 								</span>
 								<strong className="text-sm text-ink-strong">
-									{CURRENCY.format(data.capital_social)}
+									{data.capitalSocial === null
+										? "—"
+										: CURRENCY.format(data.capitalSocial)}
 								</strong>
 							</p>
 							<p className="sm:col-span-2">
@@ -201,7 +180,9 @@ function CnpjSettingsPage() {
 									CNAE principal
 								</span>
 								<strong className="text-sm text-ink-strong">
-									{data.primary_cnae} · {data.cnae_description}
+									{[data.primaryCnae, data.cnaeDescription]
+										.filter(Boolean)
+										.join(" · ") || "—"}
 								</strong>
 							</p>
 							<p className="sm:col-span-2">
@@ -213,13 +194,7 @@ function CnpjSettingsPage() {
 							<p>
 								<span className="block text-xs text-ink-muted">Porte</span>
 								<strong className="text-sm text-ink-strong">
-									{data.company_size}
-								</strong>
-							</p>
-							<p>
-								<span className="block text-xs text-ink-muted">Setor</span>
-								<strong className="text-sm text-ink-strong">
-									{data.sector}
+									{data.companySize ?? "—"}
 								</strong>
 							</p>
 							<div className="sm:col-span-2">
@@ -239,7 +214,7 @@ function CnpjSettingsPage() {
 											>
 												<strong>{contact.name}</strong>
 												{contact.role ? ` · ${contact.role}` : ""}
-												{contact.is_decision_maker ? " · decisor" : ""}
+												{contact.isDecisionMaker ? " · decisor" : ""}
 											</li>
 										))}
 									</ul>

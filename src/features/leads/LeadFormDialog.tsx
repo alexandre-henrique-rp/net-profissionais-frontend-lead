@@ -11,9 +11,12 @@ import {
 } from "#/features/leads-pool/api";
 import {
 	COMPANY_SIZE_OPTIONS,
+	type LeadSector,
+	maskCnpj,
+	maskCpf,
 	onlyDigits,
 	type PoolLeadItem,
-	SECTOR_OPTIONS,
+	sectorLabel,
 } from "#/features/leads-pool/data";
 import { ApiError } from "#/lib/api";
 
@@ -66,7 +69,8 @@ export function LeadFormDialog({
 	const [neighborhood, setNeighborhood] = useState("");
 	const [city, setCity] = useState("");
 	const [state, setState] = useState("");
-	const [sector, setSector] = useState("");
+	const [sector, setSector] = useState<LeadSector | null>(null);
+	const [customSector, setCustomSector] = useState("");
 	const [companySize, setCompanySize] = useState("");
 	const [temperature, setTemperature] = useState("");
 	const [contactName, setContactName] = useState("");
@@ -82,25 +86,25 @@ export function LeadFormDialog({
 	const createLead = useCreateManualLead();
 
 	function fillFromCnpj(data: CnpjLookup) {
-		setCompanyName(data.company_name ?? "");
-		setTradeName(data.trade_name ?? "");
-		setPrimaryCnae(data.primary_cnae ?? "");
-		setCnaeDescription(data.cnae_description ?? "");
+		setCompanyName(data.companyName ?? "");
+		setTradeName(data.tradeName ?? "");
+		setPrimaryCnae(data.primaryCnae ?? "");
+		setCnaeDescription(data.cnaeDescription ?? "");
 		setCapitalSocial(
-			data.capital_social === null ? "" : String(data.capital_social),
+			data.capitalSocial === null ? "" : String(data.capitalSocial),
 		);
-		setPostalCode(data.postal_code ?? "");
+		setPostalCode(data.postalCode ?? "");
 		setStreet(data.street ?? "");
 		setNumber(data.number ?? "");
 		setComplement(data.complement ?? "");
 		setNeighborhood(data.neighborhood ?? "");
 		setCity(data.city ?? "");
 		setState(data.state ?? "");
-		setSector(data.sector ?? "");
-		setCompanySize(data.company_size ?? "");
+		setSector(data.sector);
+		setCompanySize(data.companySize ?? "");
 
 		const partner =
-			data.contacts.find((contact) => contact.is_decision_maker) ??
+			data.contacts.find((contact) => contact.isDecisionMaker) ??
 			data.contacts[0];
 
 		if (partner) {
@@ -144,7 +148,8 @@ export function LeadFormDialog({
 		setNeighborhood("");
 		setCity("");
 		setState("");
-		setSector("");
+		setSector(null);
+		setCustomSector("");
 		setCompanySize("");
 		setTemperature("");
 		setContactName("");
@@ -195,7 +200,7 @@ export function LeadFormDialog({
 			neighborhood: optional(neighborhood),
 			city: optional(city),
 			state: optional(state),
-			sector: optional(sector),
+			custom_sector: optional(customSector),
 			company_size: optional(companySize),
 			temperature: optional(temperature),
 			contacts: contactName.trim()
@@ -237,6 +242,8 @@ export function LeadFormDialog({
 					onChange={(value) => {
 						setTipo(value);
 						setDocumento("");
+						setSector(null);
+						setCustomSector("");
 						setLookupStatus(null);
 					}}
 					items={[
@@ -250,9 +257,14 @@ export function LeadFormDialog({
 							<TextInput
 								required
 								inputMode="numeric"
+								maxLength={18}
 								placeholder="00.000.000/0000-00"
 								value={documento}
-								onChange={(event) => setDocumento(event.target.value)}
+								onChange={(event) => {
+									setDocumento(maskCnpj(event.target.value));
+									setSector(null);
+									setCustomSector("");
+								}}
 							/>
 						</Field>
 						<Button
@@ -270,9 +282,14 @@ export function LeadFormDialog({
 						<TextInput
 							required
 							inputMode="numeric"
+							maxLength={14}
 							placeholder="000.000.000-00"
 							value={documento}
-							onChange={(event) => setDocumento(event.target.value)}
+							onChange={(event) => {
+								setDocumento(maskCpf(event.target.value));
+								setSector(null);
+								setCustomSector("");
+							}}
 						/>
 					</Field>
 				)}
@@ -377,21 +394,22 @@ export function LeadFormDialog({
 					</Field>
 				</div>
 				<div className="grid gap-3 sm:grid-cols-4">
-					<Field label="Setor">
-						<select
-							value={sector}
-							onChange={(event) => setSector(event.target.value)}
-							className="h-11 w-full rounded-md border border-line-strong bg-canvas px-3 text-sm outline-none focus:border-accent-500"
-						>
-							<option value="">Não informado</option>
-							{SECTOR_OPTIONS.filter((option) => option.value !== "all").map(
-								(option) => (
-									<option key={option.value} value={option.value}>
-										{option.label}
-									</option>
-								),
-							)}
-						</select>
+					<Field label="Setor CNAE (automático)">
+						<TextInput
+							value={
+								sector ? sectorLabel(sector) : "Será classificado pelo CNAE"
+							}
+							readOnly
+							aria-label="Setor CNAE derivado"
+						/>
+					</Field>
+					<Field label="Categoria interna (opcional)">
+						<TextInput
+							value={customSector}
+							onChange={(event) => setCustomSector(event.target.value)}
+							maxLength={100}
+							placeholder="Ex.: Rede de instaladores"
+						/>
 					</Field>
 					<Field label="Porte">
 						<select

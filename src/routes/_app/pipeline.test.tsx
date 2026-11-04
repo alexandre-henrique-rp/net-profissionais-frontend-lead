@@ -30,6 +30,19 @@ function pipelineCalls(api: ReturnType<typeof installApiMock>) {
 	);
 }
 
+function emptyPipelineResponse() {
+	return {
+		...PIPELINE,
+		stages: PIPELINE.stages.map((group) => ({
+			...group,
+			cards: [],
+			count: 0,
+			total_value: 0,
+		})),
+		totals: { count: 0, total_value: 0 },
+	};
+}
+
 async function abrirSolar() {
 	fireEvent.click(
 		await screen.findByRole("button", {
@@ -46,14 +59,16 @@ describe("funil de vendas", () => {
 		testRole.current = "VENDEDOR";
 	});
 
-	it("@spec:AC-022 por padrão abre em Kanban com as 7 etapas", async () => {
+	it("@spec:AC-022 @spec:AC-194 Vendedor abre o Kanban com as 7 etapas", async () => {
 		installApiMock();
 		renderRoute("/pipeline");
 
 		expect(
-			await screen.findByRole("heading", {
-				name: "1. Novo Lead / Recebido",
-			}),
+			await screen.findByRole(
+				"heading",
+				{ name: "1. Novo Lead / Recebido" },
+				{ timeout: 5_000 },
+			),
 		).toBeInTheDocument();
 
 		for (let etapa = 1; etapa <= 7; etapa += 1) {
@@ -63,7 +78,7 @@ describe("funil de vendas", () => {
 		}
 	});
 
-	it("@spec:AC-022 a visão Lista aparece quando a URL pede view=lista", async () => {
+	it("@spec:AC-022 @spec:AC-194 a visão Lista apresenta as oportunidades da carteira", async () => {
 		installApiMock();
 		renderRoute("/pipeline?view=lista");
 
@@ -76,6 +91,63 @@ describe("funil de vendas", () => {
 		expect(textos[3]).toContain("Etapa");
 		expect(textos[4]).toContain("Vendedor");
 		expect(screen.queryByRole("heading", { name: /^1\./ })).toBeNull();
+	});
+
+	it("@spec:AC-204 Vendedor sem oportunidades recebe um caminho para o Pool", async () => {
+		testRole.current = "VENDEDOR";
+		installApiMock({
+			"GET /leads/pipeline": () => ({
+				body: { success: true, data: emptyPipelineResponse() },
+			}),
+		});
+		renderRoute("/pipeline");
+
+		expect(
+			await screen.findByText("Sua carteira está vazia no momento."),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("link", { name: "Acessar Pool de Leads" }),
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText("Sem oportunidades nesta etapa."),
+		).not.toBeInTheDocument();
+	});
+
+	it("@spec:AC-204 Admin pode limpar filtros quando a equipe não tem resultados", async () => {
+		testRole.current = "ADMIN";
+		installApiMock({
+			"GET /leads/pipeline": ({ url }) => ({
+				body: {
+					success: true,
+					data:
+						Number(url.searchParams.get("ticket_min") ?? 0) > 0
+							? emptyPipelineResponse()
+							: PIPELINE,
+				},
+			}),
+		});
+		renderRoute("/pipeline");
+
+		expect(
+			await screen.findByText("Visão da equipe · Lista"),
+		).toBeInTheDocument();
+		await screen.findByLabelText("Filtrar por vendedor");
+		expect(
+			(await screen.findAllByRole("button", { name: "Abrir ficha" })).length,
+		).toBeGreaterThan(0);
+		fireEvent.change(screen.getByLabelText("Ticket mínimo (R$)"), {
+			target: { value: "9999999" },
+		});
+		expect(
+			await screen.findByText("Nenhuma oportunidade corresponde aos filtros."),
+		).toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole("button", { name: "Limpar filtros" }));
+		await waitFor(() => {
+			expect(
+				screen.getAllByRole("button", { name: "Abrir ficha" }).length,
+			).toBeGreaterThan(0);
+		});
 	});
 
 	it("@spec:AC-022 a visão Lista carrega os leads de todas as etapas", async () => {
@@ -111,7 +183,7 @@ describe("funil de vendas", () => {
 		expect(colunas).toHaveLength(7);
 	});
 
-	it("@spec:AC-158 mover o card chama PATCH /leads/{id}/stage com stage_id e version", async () => {
+	it("@spec:AC-158 @spec:AC-195 mover o card chama PATCH /leads/{id}/stage com stage_id e version", async () => {
 		const api = installApiMock();
 		renderRoute("/pipeline");
 
@@ -176,7 +248,7 @@ describe("funil de vendas", () => {
 		).toBeInTheDocument();
 	});
 
-	it("@spec:AC-029 atualiza o ticket e exige motivo antes de marcar a oportunidade como perdida", async () => {
+	it("@spec:AC-029 @spec:AC-197 atualiza o ticket e exige motivo antes de marcar a oportunidade como perdida", async () => {
 		installApiMock();
 		renderRoute("/pipeline");
 		await abrirSolar();
@@ -203,7 +275,7 @@ describe("funil de vendas", () => {
 		expect(await screen.findByText(/motivo registrado/)).toBeInTheDocument();
 	});
 
-	it("@spec:AC-160 salvar os termos comerciais chama PUT /leads/{id}/commercial-terms", async () => {
+	it("@spec:AC-160 @spec:AC-196 salvar os termos comerciais chama PUT /leads/{id}/commercial-terms", async () => {
 		const api = installApiMock();
 		renderRoute("/pipeline");
 		await abrirSolar();
@@ -224,6 +296,7 @@ describe("funil de vendas", () => {
 					call.path === "/leads/tenant-lead-1/commercial-terms",
 			);
 			expect(chamada?.body).toMatchObject({
+				version: 3,
 				ticket_value: 60000,
 				close_probability: 75,
 			});
@@ -250,6 +323,7 @@ describe("funil de vendas", () => {
 					call.path === "/leads/tenant-lead-1/mark-as-lost",
 			);
 			expect(chamada?.body).toMatchObject({
+				version: 3,
 				loss_reason_code: "concorrencia",
 			});
 		});
@@ -277,7 +351,55 @@ describe("funil de vendas", () => {
 		).toBe(true);
 	});
 
-	it("@spec:AC-163 salvar uma nota chama POST /leads/{id}/timeline-notes e mostra a nota", async () => {
+	it("@spec:AC-200 @spec:AC-205 ficha vazia mostra fallbacks para nome e relacionamentos", async () => {
+		testRole.current = "VENDEDOR";
+		const emptyDetail = {
+			...LEAD_DETAIL,
+			lead: {
+				...LEAD_DETAIL.lead,
+				company_name: "   ",
+				trade_name: " ",
+				cnpj: " ",
+			},
+			contacts: [],
+			special_dates: [],
+			timeline: [],
+			fiscal: {
+				...LEAD_DETAIL.fiscal,
+				cnpj: " ",
+				company_size: " ",
+				primary_cnae: " ",
+				cnae_description: " ",
+			},
+		};
+		installApiMock({
+			"GET /leads/:id": () => ({
+				body: { success: true, data: emptyDetail },
+			}),
+		});
+		renderRoute("/pipeline");
+
+		fireEvent.click(
+			await screen.findByRole("button", {
+				name: "Abrir Solar Tech Engenharia",
+			}),
+		);
+		const ficha = await screen.findByRole("dialog", {
+			name: "Empresa sem nome",
+		});
+		expect(within(ficha).getByText(/CNPJ: não informado/)).toBeInTheDocument();
+		expect(
+			within(ficha).getByText("Nenhum contato cadastrado."),
+		).toBeInTheDocument();
+		expect(
+			within(ficha).getByText("Nenhuma data especial cadastrada."),
+		).toBeInTheDocument();
+		expect(
+			within(ficha).getByText("Nenhuma interação registrada ainda."),
+		).toBeInTheDocument();
+	});
+
+	it("@spec:AC-163 @spec:AC-198 salvar uma nota chama POST /leads/{id}/timeline-notes e mostra a nota", async () => {
 		const api = installApiMock();
 		renderRoute("/pipeline");
 		await abrirSolar();
@@ -323,7 +445,7 @@ describe("funil de vendas", () => {
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 	});
 
-	it("@spec:AC-164 devolver ao pool chama POST /leads/{id}/unlink e fecha a gaveta", async () => {
+	it("@spec:AC-164 @spec:AC-199 devolver ao pool chama POST /leads/{id}/unlink e fecha a gaveta", async () => {
 		const api = installApiMock();
 		renderRoute("/pipeline");
 		await abrirSolar();
@@ -344,9 +466,9 @@ describe("funil de vendas", () => {
 		});
 	});
 
-	it("@spec:AC-034 mantém o Administrador na Lista agrupada com os filtros de equipe", async () => {
+	it("@spec:AC-034 @spec:AC-189 mantém o Administrador na Lista e permite filtrar a equipe e abrir uma ficha", async () => {
 		testRole.current = "ADMIN";
-		installApiMock();
+		const api = installApiMock();
 		renderRoute("/pipeline");
 
 		expect(
@@ -363,6 +485,25 @@ describe("funil de vendas", () => {
 		expect(
 			screen.queryByRole("heading", { name: /^1\./ }),
 		).not.toBeInTheDocument();
+
+		fireEvent.change(screen.getByLabelText("Filtrar por vendedor"), {
+			target: { value: "user-seller" },
+		});
+		await waitFor(() => {
+			expect(
+				api.calls.some(
+					(call) =>
+						call.method === "GET" &&
+						call.path === "/leads/pipeline" &&
+						call.url.searchParams.get("assigned_user_id") === "user-seller",
+				),
+			).toBe(true);
+		});
+
+		fireEvent.click(
+			(await screen.findAllByRole("button", { name: "Abrir ficha" }))[0],
+		);
+		expect(await screen.findByRole("dialog")).toBeInTheDocument();
 	});
 
 	it("@spec:AC-034 redireciona Captador para o dashboard sem abrir o funil", async () => {

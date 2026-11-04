@@ -16,6 +16,7 @@ import {
 import { type ApiPage, apiFetch, type QueryValue } from "#/lib/api";
 import {
 	flattenPipeline,
+	type LeadSector,
 	onlyDigits,
 	type PipelineResponse,
 	type PoolFilters,
@@ -32,6 +33,7 @@ export function toPoolQuery(filters: PoolFilters): Record<string, QueryValue> {
 		q: filters.q.trim(),
 		uf: filters.uf,
 		sector: filters.sector,
+		custom_sector: filters.customSector.trim() || undefined,
 		company_size: filters.companySize,
 		temperature: filters.temperature,
 		page: filters.page,
@@ -153,7 +155,7 @@ export interface ManualLeadInput {
 	neighborhood?: string;
 	city?: string;
 	state?: string;
-	sector?: string;
+	custom_sector?: string;
 	company_size?: string;
 	temperature?: string;
 	contacts?: ManualLeadContact[];
@@ -179,24 +181,24 @@ export function useCreateManualLead() {
 
 /** Retorno da consulta de CNPJ (`GET /integrations/cnpj/{cnpj}`). */
 export interface CnpjLookup {
-	company_name: string | null;
-	trade_name: string | null;
-	primary_cnae: string | null;
-	cnae_description: string | null;
-	capital_social: number | null;
-	postal_code: string | null;
+	companyName: string | null;
+	tradeName: string | null;
+	primaryCnae: string | null;
+	cnaeDescription: string | null;
+	capitalSocial: number | null;
+	postalCode: string | null;
 	street: string | null;
 	number: string | null;
 	complement: string | null;
 	neighborhood: string | null;
 	city: string | null;
 	state: string | null;
-	company_size: string | null;
-	sector: string | null;
+	sector: LeadSector;
+	companySize: string | null;
 	contacts: Array<{
 		name: string;
 		role: string | null;
-		is_decision_maker: boolean;
+		isDecisionMaker: boolean;
 	}>;
 }
 

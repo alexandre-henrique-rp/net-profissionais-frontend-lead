@@ -10,6 +10,7 @@ import {
 	type ApiMock,
 	installApiMock,
 	mockFailures,
+	PIPELINE,
 	POOL_PAGE,
 } from "#/test/apiMock";
 import { renderRoute } from "#/test/renderRoute";
@@ -48,6 +49,52 @@ describe("pool de leads", () => {
 	beforeEach(() => {
 		testRole.current = "ADMIN";
 		api = installApiMock();
+	});
+
+	it("@spec:AC-203 Pool sem registros informa que não há leads disponíveis", async () => {
+		api.set("GET /leads/pool", () => ({
+			body: {
+				success: true,
+				data: {
+					items: [],
+					meta: { page: 1, limit: 20, total: 0, has_more: false },
+				},
+			},
+		}));
+		renderRoute("/leads-pool");
+
+		expect(
+			await screen.findByText("O Pool de Leads está vazio no momento."),
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText("Nenhum lead corresponde aos filtros atuais."),
+		).not.toBeInTheDocument();
+	});
+
+	it("@spec:AC-203 Pool com filtros sem resultado oferece limpeza dos filtros", async () => {
+		api.set("GET /leads/pool", () => ({
+			body: {
+				success: true,
+				data: {
+					items: [],
+					meta: { page: 1, limit: 20, total: 0, has_more: false },
+				},
+			},
+		}));
+		renderRoute("/leads-pool");
+
+		fireEvent.change(await screen.findByLabelText("Buscar leads"), {
+			target: { value: "empresa inexistente" },
+		});
+		expect(
+			await screen.findByText("Nenhum lead corresponde aos filtros atuais."),
+		).toBeInTheDocument();
+		fireEvent.click(screen.getByRole("button", { name: "Limpar filtros" }));
+
+		expect(
+			await screen.findByText("O Pool de Leads está vazio no momento."),
+		).toBeInTheDocument();
+		expect(screen.getByLabelText("Buscar leads")).toHaveValue("");
 	});
 
 	it("@spec:AC-021 mostra o banner de repositório central de entrada", async () => {
@@ -92,7 +139,7 @@ describe("pool de leads", () => {
 		).toBeNull();
 	});
 
-	it("@spec:AC-035 Captador acompanha vendedor e etapa sem ações de assumir ou atribuir", async () => {
+	it("@spec:AC-035 @spec:AC-209 Captador acompanha vendedor e etapa sem ações de assumir ou atribuir", async () => {
 		testRole.current = "CAPTADOR";
 		renderRoute("/leads-pool");
 
@@ -118,6 +165,103 @@ describe("pool de leads", () => {
 		).toBeNull();
 	});
 
+	it("@spec:AC-210 Captador cadastra lead manual e o encontra na própria esteira", async () => {
+		testRole.current = "CAPTADOR";
+		const novaCaptacao = {
+			id: "tenant-lead-captacao",
+			stage_id: PIPELINE.stages[0].stage.id,
+			status: "AVAILABLE",
+			lead: {
+				company_name: "Nova Captação Ltda",
+				trade_name: "Nova Captação",
+				cnpj: "12345678000190",
+				city: "Contagem",
+				state: "MG",
+			},
+			assigned_user: null,
+			ticket_value: null,
+			close_probability: null,
+			expected_close_date: null,
+			proposal_scope: null,
+			loss_reason_code: null,
+			loss_reason_notes: null,
+			last_contact_at: null,
+			version: 1,
+			has_alert: false,
+		};
+		let created = false;
+		api = installApiMock({
+			"GET /leads/pipeline": () => ({
+				body: {
+					success: true,
+					data: created
+						? {
+								...PIPELINE,
+								stages: PIPELINE.stages.map((group, index) =>
+									index === 0
+										? { ...group, cards: [...group.cards, novaCaptacao] }
+										: group,
+								),
+							}
+						: PIPELINE,
+				},
+			}),
+			"POST /leads/manual": () => {
+				created = true;
+				return {
+					status: 201,
+					body: {
+						success: true,
+						data: {
+							...POOL_PAGE.items[0],
+							id: "tenant-lead-captacao",
+							lead: {
+								...POOL_PAGE.items[0].lead,
+								companyName: "Nova Captação Ltda",
+								tradeName: "Nova Captação",
+								cnpj: "12345678000190",
+								city: "Contagem",
+							},
+						},
+					},
+				};
+			},
+		});
+
+		renderRoute("/leads-pool?novo=1");
+		const dialog = await screen.findByRole("dialog", { name: "Novo lead" });
+		fireEvent.change(within(dialog).getByLabelText("CNPJ"), {
+			target: { value: "12.345.678/0001-90" },
+		});
+		fireEvent.change(within(dialog).getByLabelText("Razão social"), {
+			target: { value: "Nova Captação Ltda" },
+		});
+		fireEvent.change(within(dialog).getByLabelText("Cidade"), {
+			target: { value: "Contagem" },
+		});
+		fireEvent.change(within(dialog).getByLabelText("Contato principal"), {
+			target: { value: "João Lima" },
+		});
+		fireEvent.click(
+			within(dialog).getByRole("button", { name: "Salvar lead" }),
+		);
+
+		await waitFor(() => {
+			expect(callsTo("POST", "/leads/manual")).toHaveLength(1);
+		});
+		expect(callsTo("POST", "/leads/manual")[0].body).toMatchObject({
+			person_type: "PJ",
+			cnpj: "12345678000190",
+			company_name: "Nova Captação Ltda",
+		});
+
+		const esteira = await screen.findByRole("table");
+		expect(
+			await within(esteira).findByText("Nova Captação Ltda"),
+		).toBeInTheDocument();
+		expect(within(esteira).getByText("Sem vendedor")).toBeInTheDocument();
+	});
+
 	it("@spec:AC-027 o atalho de nova captação abre o formulário PJ/PF", async () => {
 		testRole.current = "CAPTADOR";
 		renderRoute("/leads-pool?novo=1");
@@ -137,7 +281,7 @@ describe("pool de leads", () => {
 		expect(screen.getByText(/ANIV\. DECISOR 14\/11/)).toBeInTheDocument();
 	});
 
-	it("@spec:AC-027 cadastra PJ/PF pela API e atribui o lead a um vendedor", async () => {
+	it("@spec:AC-027 @spec:AC-188 Admin cadastra PJ e atribui o lead a um vendedor", async () => {
 		renderRoute("/leads-pool");
 		fireEvent.click(
 			await screen.findByRole("button", {
@@ -150,12 +294,17 @@ describe("pool de leads", () => {
 
 		fireEvent.click(screen.getByRole("tab", { name: "Pessoa Física (CPF)" }));
 		expect(screen.getByLabelText("CPF")).toBeInTheDocument();
+		fireEvent.change(screen.getByLabelText("CPF"), {
+			target: { value: "12345678901" },
+		});
+		expect(screen.getByLabelText("CPF")).toHaveValue("123.456.789-01");
 		fireEvent.click(
 			screen.getByRole("tab", { name: "Pessoa Jurídica (CNPJ)" }),
 		);
 		fireEvent.change(screen.getByLabelText("CNPJ"), {
-			target: { value: "12.345.678/0001-90" },
+			target: { value: "12345678000190" },
 		});
+		expect(screen.getByLabelText("CNPJ")).toHaveValue("12.345.678/0001-90");
 		fireEvent.change(screen.getByLabelText("Razão social"), {
 			target: { value: "Nova Empresa Ltda" },
 		});
@@ -267,7 +416,22 @@ describe("pool de leads", () => {
 		});
 	});
 
-	it("@spec:AC-153 assumir chama POST /leads/pool/{id}/claim e recarrega", async () => {
+	it("@spec:AC-182 mostra e filtra a categoria interna da oportunidade", async () => {
+		renderRoute("/leads-pool");
+
+		expect(await screen.findByText("Instaladores")).toBeInTheDocument();
+		fireEvent.change(screen.getByLabelText("Filtrar por categoria interna"), {
+			target: { value: "instaladores" },
+		});
+
+		await waitFor(() => {
+			expect(lastPoolCall()?.searchParams.get("custom_sector")).toBe(
+				"instaladores",
+			);
+		});
+	});
+
+	it("@spec:AC-153 @spec:AC-193 assumir chama POST /leads/pool/{id}/claim e recarrega", async () => {
 		testRole.current = "VENDEDOR";
 		renderRoute("/leads-pool");
 
@@ -391,8 +555,9 @@ describe("pool de leads", () => {
 		await screen.findByRole("dialog", { name: "Novo lead" });
 
 		fireEvent.change(screen.getByLabelText("CNPJ"), {
-			target: { value: "12.345.678/0001-90" },
+			target: { value: "12345678000190" },
 		});
+		expect(screen.getByLabelText("CNPJ")).toHaveValue("12.345.678/0001-90");
 		fireEvent.click(screen.getByRole("button", { name: "🔍 Buscar CNPJ" }));
 
 		expect(
@@ -402,7 +567,74 @@ describe("pool de leads", () => {
 		expect(screen.getByLabelText("Razão social")).toHaveValue(
 			"Empresa de demonstração",
 		);
+		expect(screen.getByLabelText("Nome fantasia")).toHaveValue("Demonstração");
 		expect(screen.getByLabelText(/^CNAE/)).toHaveValue("4321500");
 		expect(screen.getByLabelText("Cidade")).toHaveValue("Belo Horizonte");
+	});
+
+	it("@spec:AC-207 CNPJ indisponível mantém o cadastro manual disponível", async () => {
+		api.set("GET /integrations/cnpj/:cnpj", () => mockFailures.serverError());
+		renderRoute("/leads-pool");
+		fireEvent.click(
+			await screen.findByRole("button", {
+				name: "+ Novo Lead (Manual / CNPJ)",
+			}),
+		);
+		await screen.findByRole("dialog", { name: "Novo lead" });
+		fireEvent.change(screen.getByLabelText("CNPJ"), {
+			target: { value: "12345678000190" },
+		});
+		fireEvent.click(screen.getByRole("button", { name: "🔍 Buscar CNPJ" }));
+
+		expect(await screen.findByRole("alert")).toBeInTheDocument();
+		expect(screen.getByLabelText("Razão social")).toBeEnabled();
+		fireEvent.change(screen.getByLabelText("Razão social"), {
+			target: { value: "Empresa preenchida manualmente" },
+		});
+		fireEvent.change(screen.getByLabelText("Contato principal"), {
+			target: { value: "Ana Souza" },
+		});
+		fireEvent.click(screen.getByRole("button", { name: "Salvar lead" }));
+
+		await waitFor(() => {
+			expect(callsTo("POST", "/leads/manual")).toHaveLength(1);
+		});
+		expect(callsTo("POST", "/leads/manual")[0].body).toMatchObject({
+			cnpj: "12345678000190",
+			company_name: "Empresa preenchida manualmente",
+		});
+	});
+
+	it("@spec:AC-179 @spec:AC-183 exibe setor CNAE derivado e aceita categoria interna separada", async () => {
+		renderRoute("/leads-pool");
+		fireEvent.click(
+			await screen.findByRole("button", {
+				name: "+ Novo Lead (Manual / CNPJ)",
+			}),
+		);
+		await screen.findByRole("dialog", { name: "Novo lead" });
+		fireEvent.change(screen.getByLabelText("CNPJ"), {
+			target: { value: "12345678000190" },
+		});
+		fireEvent.click(screen.getByRole("button", { name: "🔍 Buscar CNPJ" }));
+
+		await screen.findByText(/Dados da Receita Federal carregados/);
+		expect(screen.getByLabelText("Setor CNAE derivado")).toHaveValue(
+			"Construção",
+		);
+		fireEvent.change(screen.getByPlaceholderText("Ex.: Rede de instaladores"), {
+			target: { value: "Instaladores" },
+		});
+		fireEvent.click(screen.getByRole("button", { name: "Salvar lead" }));
+
+		await waitFor(() => {
+			expect(callsTo("POST", "/leads/manual")[0]?.body).toMatchObject({
+				custom_sector: "Instaladores",
+				primary_cnae: "4321500",
+			});
+			expect(callsTo("POST", "/leads/manual")[0]?.body).not.toHaveProperty(
+				"sector",
+			);
+		});
 	});
 });

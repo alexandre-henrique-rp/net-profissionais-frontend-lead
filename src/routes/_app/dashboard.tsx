@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { PageHeader } from "#/components/layout/PageHeader";
 import { Badge, type BadgeTone } from "#/components/ui/Badge";
 import { Button } from "#/components/ui/Button";
@@ -30,6 +30,7 @@ import {
 } from "#/features/dashboard/data";
 import { PeriodFilter } from "#/features/dashboard/PeriodFilter";
 import { ApiError } from "#/lib/api";
+import { displayText, finiteNumberOr, firstNonBlankText } from "#/lib/display";
 import { type OperationalRole, useSession } from "#/lib/session";
 
 export const Route = createFileRoute("/_app/dashboard")({
@@ -94,11 +95,22 @@ function DashboardError({
 	);
 }
 
-function EmptySection({ children }: { children: string }) {
+function EmptySection({
+	children,
+	action,
+}: {
+	children: ReactNode;
+	action?: ReactNode;
+}) {
 	return (
-		<p className="mt-4 rounded-xl border border-dashed border-line bg-canvas px-4 py-6 text-center text-xs text-ink-muted">
-			{children}
-		</p>
+		<div
+			aria-live="polite"
+			aria-atomic="true"
+			className="mt-4 rounded-xl border border-dashed border-line bg-canvas px-4 py-6 text-center text-xs text-ink-muted"
+		>
+			<p>{children}</p>
+			{action ? <div className="mt-3">{action}</div> : null}
+		</div>
 	);
 }
 
@@ -128,7 +140,7 @@ function useLeadsExport(period: PeriodSelection) {
 }
 
 function maxCount(stages: FunnelStage[]): number {
-	return Math.max(...stages.map((stage) => stage.count), 0);
+	return Math.max(...stages.map((stage) => finiteNumberOr(stage.count, 0)), 0);
 }
 
 function FunnelBar({
@@ -145,14 +157,14 @@ function FunnelBar({
 	return (
 		<li className="grid grid-cols-1 gap-1.5 sm:grid-cols-[190px_minmax(0,1fr)_96px] sm:items-center sm:gap-3">
 			<span className="text-[12px] font-semibold text-ink">
-				{stage.stage_name}
+				{displayText(stage.stage_name, "Etapa sem nome")}
 			</span>
 			<span className="h-8 min-w-0 overflow-hidden rounded-md bg-ink-soft">
 				<span
 					className="flex h-full min-w-fit items-center rounded-md px-3 text-[11px] font-bold text-white shadow-xs"
 					style={{
 						width: `${barWidth(stage.count, maximum)}%`,
-						backgroundColor: stage.color_hex,
+						backgroundColor: displayText(stage.color_hex, "#94a3b8"),
 					}}
 				>
 					{formatNumber(stage.count)} leads ({formatPercent(share)})
@@ -227,7 +239,8 @@ function AdminBody({ data }: { data: AdminDashboard }) {
 		loss_reasons.length > 0
 			? loss_reasons
 					.map(
-						(reason) => `${reason.label} (${formatPercent(reason.percentage)})`,
+						(reason) =>
+							`${displayText(reason.label, "Outro motivo")} (${formatPercent(reason.percentage)})`,
 					)
 					.join(" • ")
 			: "Nenhuma perda registrada no período";
@@ -241,10 +254,22 @@ function AdminBody({ data }: { data: AdminDashboard }) {
 
 			{kpis.total_leads === 0 ? (
 				<Card className="mb-4 p-4">
-					<p className="text-xs font-semibold text-ink">
-						Nenhum lead foi criado no período selecionado. Ajuste o filtro de
-						período para ver os indicadores.
-					</p>
+					<div
+						aria-live="polite"
+						aria-atomic="true"
+						className="flex flex-wrap items-center justify-between gap-3"
+					>
+						<p className="text-xs font-semibold text-ink">
+							Nenhum lead foi criado no período selecionado. Ajuste o filtro de
+							período para ver os indicadores.
+						</p>
+						<Link
+							to="/leads-pool"
+							className="text-xs font-bold text-brand-600 hover:underline"
+						>
+							Abrir Pool de Leads
+						</Link>
+					</div>
 				</Card>
 			) : null}
 
@@ -390,7 +415,7 @@ function AdminBody({ data }: { data: AdminDashboard }) {
 										</span>
 										<div className="min-w-0">
 											<p className="text-[13px] font-bold text-ink-strong">
-												{person.name}
+												{displayText(person.name, "Colaborador sem nome")}
 											</p>
 											<p className="mt-0.5 text-[11px] text-ink-muted">
 												{formatNumber(person.claimed_count)} leads assumidos •{" "}
@@ -499,8 +524,19 @@ function SellerBody({ data }: { data: SellerDashboard }) {
 					<p className="mt-0.5 text-[11px] text-ink-muted">
 						Volume de clientes e valores acumulados em cada etapa:
 					</p>
-					{my_funnel.length === 0 ? (
-						<EmptySection>Nenhum lead na sua carteira no período.</EmptySection>
+					{kpis.my_leads === 0 || my_funnel.length === 0 ? (
+						<EmptySection
+							action={
+								<Link
+									to="/leads-pool"
+									className="font-bold text-brand-600 hover:underline"
+								>
+									Acessar Pool de Leads
+								</Link>
+							}
+						>
+							Nenhum lead na sua carteira no período.
+						</EmptySection>
 					) : (
 						<ul className="mt-4 flex flex-col gap-2">
 							{my_funnel.map((stage) => (
@@ -537,7 +573,7 @@ function SellerBody({ data }: { data: SellerDashboard }) {
 								>
 									<div className="min-w-0">
 										<p className="text-[12px] font-bold text-ink-strong">
-											{task.company_name ?? "Lead sem nome"}
+											{displayText(task.company_name, "Lead sem nome")}
 										</p>
 										<p className="mt-0.5 text-[11px] font-semibold text-brand-600">
 											{task.reason}
@@ -578,7 +614,9 @@ function SellerBody({ data }: { data: SellerDashboard }) {
 								>
 									<p className="text-[12px] font-bold text-ink-strong">
 										{entry.contact_name ?? "Contato"}{" "}
-										{entry.company_name ? `• ${entry.company_name}` : ""}
+										{firstNonBlankText(entry.company_name)
+											? `• ${firstNonBlankText(entry.company_name)}`
+											: ""}
 									</p>
 									<p className="mt-1 text-[11px] font-bold text-amber-700">
 										🎂 {entry.day_month} ·{" "}
@@ -690,8 +728,20 @@ function CaptadorBody({ data }: { data: CaptadorDashboard }) {
 					<p className="mt-0.5 text-[11px] text-ink-muted">
 						Onde estão os leads que você trouxe neste momento:
 					</p>
-					{by_status.length === 0 ? (
-						<EmptySection>Você ainda não cadastrou leads.</EmptySection>
+					{kpis.captured_total === 0 || by_status.length === 0 ? (
+						<EmptySection
+							action={
+								<Link
+									to="/leads-pool"
+									search={{ novo: "1" }}
+									className="font-bold text-brand-600 hover:underline"
+								>
+									Cadastrar primeira captação
+								</Link>
+							}
+						>
+							Você ainda não cadastrou leads.
+						</EmptySection>
 					) : (
 						<div className="mt-4 grid gap-2.5">
 							{by_status.map((entry) => (
@@ -741,7 +791,7 @@ function CaptadorBody({ data }: { data: CaptadorDashboard }) {
 								>
 									<div className="min-w-0">
 										<p className="text-[12px] font-bold text-ink-strong">
-											{capture.company_name ?? "Lead sem nome"}
+											{displayText(capture.company_name, "Lead sem nome")}
 										</p>
 										<p className="mt-0.5 text-[10px] text-ink-muted">
 											{formatDateTime(capture.created_at)}

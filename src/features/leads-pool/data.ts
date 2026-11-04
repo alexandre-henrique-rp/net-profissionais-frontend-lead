@@ -6,6 +6,8 @@
  * exemplo: quem alimenta a tela é a API.
  */
 
+import { finiteNumberOrNull, firstNonBlankText } from "#/lib/display";
+
 export type PersonType = "PJ" | "PF";
 
 export type LeadSector =
@@ -13,7 +15,26 @@ export type LeadSector =
 	| "TECNOLOGIA"
 	| "CONSTRUCAO"
 	| "SERVICOS"
-	| "OUTROS";
+	| "OUTROS"
+	| "AGROPECUARIA"
+	| "EXTRATIVISMO"
+	| "INDUSTRIA"
+	| "ENERGIA"
+	| "AGUA_RESIDUOS"
+	| "COMERCIO"
+	| "TRANSPORTE_LOGISTICA"
+	| "ALOJAMENTO_ALIMENTACAO"
+	| "INFORMACAO_COMUNICACAO"
+	| "FINANCAS_SEGUROS"
+	| "IMOBILIARIO"
+	| "PROFISSIONAL_CIENTIFICO"
+	| "ADMINISTRATIVO"
+	| "ADMINISTRACAO_PUBLICA"
+	| "EDUCACAO"
+	| "SAUDE_SOCIAL"
+	| "ARTES_LAZER"
+	| "SERVICOS_DOMESTICOS"
+	| "ORGANISMOS_INTERNACIONAIS";
 
 export type CompanySize = "ME" | "EPP" | "DEMAIS";
 
@@ -84,6 +105,7 @@ export interface PoolLeadItem {
 	closeProbability: number | null;
 	expectedCloseDate: string | null;
 	proposalScope: string | null;
+	customSector?: string | null;
 	lossReasonCode: string | null;
 	lossReasonNotes: string | null;
 	version: number;
@@ -101,6 +123,7 @@ export interface PoolFilters {
 	/** `all` ou a sigla de duas letras. */
 	uf: string;
 	sector: string;
+	customSector: string;
 	companySize: string;
 	/** `all`, `hot`, `warm` ou `cold`. */
 	temperature: string;
@@ -112,6 +135,7 @@ export const DEFAULT_POOL_FILTERS: PoolFilters = {
 	q: "",
 	uf: "all",
 	sector: "all",
+	customSector: "",
 	companySize: "all",
 	temperature: "all",
 	page: 1,
@@ -175,6 +199,35 @@ export function onlyDigits(value: string): string {
 	return value.replace(/\D/g, "");
 }
 
+/** Aplica a máscara de CNPJ enquanto o usuário digita ou cola o documento. */
+export function maskCnpj(value: string): string {
+	const digits = onlyDigits(value).slice(0, 14);
+
+	if (digits.length <= 2) return digits;
+	if (digits.length <= 5) return `${digits.slice(0, 2)}.${digits.slice(2)}`;
+	if (digits.length <= 8) {
+		return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`;
+	}
+	if (digits.length <= 12) {
+		return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`;
+	}
+
+	return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`;
+}
+
+/** Aplica a máscara de CPF enquanto o usuário digita ou cola o documento. */
+export function maskCpf(value: string): string {
+	const digits = onlyDigits(value).slice(0, 11);
+
+	if (digits.length <= 3) return digits;
+	if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+	if (digits.length <= 9) {
+		return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+	}
+
+	return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+}
+
 export function formatCnpj(value: string): string {
 	const digits = onlyDigits(value);
 
@@ -197,12 +250,14 @@ export function formatCpf(value: string): string {
 
 /** `CNPJ: 33.456.789/0001-02` — ou o aviso de documento ausente. */
 export function documentLabel(company: LeadCompany): string {
-	if (company.cnpj) {
-		return `CNPJ: ${formatCnpj(company.cnpj)}`;
+	const cnpj = firstNonBlankText(company.cnpj);
+	if (cnpj) {
+		return `CNPJ: ${formatCnpj(cnpj)}`;
 	}
 
-	if (company.cpf) {
-		return `CPF: ${formatCpf(company.cpf)}`;
+	const cpf = firstNonBlankText(company.cpf);
+	if (cpf) {
+		return `CPF: ${formatCpf(cpf)}`;
 	}
 
 	return company.personType === "PF"
@@ -212,11 +267,12 @@ export function documentLabel(company: LeadCompany): string {
 
 /** Ticket em BRL; `—` quando o valor ainda não foi definido. */
 export function formatTicket(value: number | null | undefined): string {
-	if (value === null || value === undefined) {
+	const ticket = finiteNumberOrNull(value);
+	if (ticket === null) {
 		return "—";
 	}
 
-	return `R$ ${value.toLocaleString("pt-BR", {
+	return `R$ ${ticket.toLocaleString("pt-BR", {
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2,
 	})}`;
@@ -253,7 +309,9 @@ export function contactLabel(item: PoolLeadItem): string {
 		return "Sem contato";
 	}
 
-	return contact.role ? `${contact.name} (${contact.role})` : contact.name;
+	const name = firstNonBlankText(contact.name) ?? "Contato sem nome";
+	const role = firstNonBlankText(contact.role);
+	return role ? `${name} (${role})` : name;
 }
 
 /** Observação do card: só aparece quando o contato primário tem aniversário. */
@@ -264,19 +322,39 @@ export function birthdayLabel(item: PoolLeadItem): string | null {
 }
 
 export const SECTOR_LABELS: Record<LeadSector, string> = {
-	SOLAR: "Solar",
-	TECNOLOGIA: "Tecnologia",
+	SOLAR: "Solar (legado)",
+	TECNOLOGIA: "Tecnologia (legado)",
 	CONSTRUCAO: "Construção",
-	SERVICOS: "Serviços",
+	SERVICOS: "Outros serviços",
 	OUTROS: "Outros",
+	AGROPECUARIA: "Agropecuária e pesca",
+	EXTRATIVISMO: "Indústrias extrativas",
+	INDUSTRIA: "Indústrias de transformação",
+	ENERGIA: "Energia e gás",
+	AGUA_RESIDUOS: "Água, esgoto e resíduos",
+	COMERCIO: "Comércio e reparação",
+	TRANSPORTE_LOGISTICA: "Transporte e logística",
+	ALOJAMENTO_ALIMENTACAO: "Alojamento e alimentação",
+	INFORMACAO_COMUNICACAO: "Informação e comunicação",
+	FINANCAS_SEGUROS: "Finanças e seguros",
+	IMOBILIARIO: "Atividades imobiliárias",
+	PROFISSIONAL_CIENTIFICO: "Atividades profissionais e científicas",
+	ADMINISTRATIVO: "Serviços administrativos",
+	ADMINISTRACAO_PUBLICA: "Administração pública",
+	EDUCACAO: "Educação",
+	SAUDE_SOCIAL: "Saúde e serviços sociais",
+	ARTES_LAZER: "Artes, cultura e lazer",
+	SERVICOS_DOMESTICOS: "Serviços domésticos",
+	ORGANISMOS_INTERNACIONAIS: "Organismos internacionais",
 };
 
 export function sectorLabel(sector: LeadSector | string | null): string {
-	if (!sector) {
+	const normalized = firstNonBlankText(sector);
+	if (!normalized) {
 		return "Não informado";
 	}
 
-	return SECTOR_LABELS[sector as LeadSector] ?? sector;
+	return SECTOR_LABELS[normalized as LeadSector] ?? normalized;
 }
 
 export const COMPANY_SIZE_LABELS: Record<CompanySize, string> = {
@@ -330,7 +408,9 @@ export function flattenPipeline(pipeline: PipelineResponse): CapturedLead[] {
 	return pipeline.stages.flatMap((group) =>
 		group.cards.map((card) => ({
 			id: card.id,
-			companyName: card.lead.company_name ?? card.lead.trade_name ?? "Empresa",
+			companyName:
+				firstNonBlankText(card.lead.company_name, card.lead.trade_name) ??
+				"Empresa sem nome",
 			document: card.lead.cnpj
 				? `CNPJ: ${formatCnpj(card.lead.cnpj)}`
 				: "CNPJ não informado",

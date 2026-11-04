@@ -99,8 +99,9 @@ describe("configurações", () => {
 		).toBeInTheDocument();
 
 		fireEvent.change(screen.getByLabelText("CNPJ"), {
-			target: { value: "12.345.678/0001-90" },
+			target: { value: "12345678000190" },
 		});
+		expect(screen.getByLabelText("CNPJ")).toHaveValue("12.345.678/0001-90");
 		fireEvent.click(screen.getByRole("button", { name: "Consultar" }));
 
 		const resultado = await screen.findByRole("status");
@@ -119,12 +120,12 @@ describe("configurações", () => {
 	it("@spec:AC-169 avisa quando o CNPJ não é encontrado", async () => {
 		const api = installApiMock();
 		api.set("GET /integrations/cnpj/:cnpj", () => ({
-			status: 404,
+			status: 422,
 			body: {
 				success: false,
 				error: {
-					code: "NOT_FOUND",
-					message: "CNPJ não encontrado.",
+					code: "CNPJ_NOT_FOUND",
+					message: "Não foi possível obter os dados deste CNPJ.",
 					timestamp: "2026-10-26T12:00:00.000Z",
 				},
 			},

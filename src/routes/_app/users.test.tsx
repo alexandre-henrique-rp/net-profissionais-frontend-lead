@@ -148,6 +148,19 @@ function usarAdministrador() {
 }
 
 describe("gestão de usuários", () => {
+	it("@spec:AC-206 tenant sem colaboradores mantém o convite disponível", async () => {
+		usarAdministrador();
+		installApiMock({ "GET /users": () => pageOf([]) });
+		renderRoute("/users");
+
+		expect(
+			await screen.findByText("Nenhum colaborador cadastrado."),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("button", { name: "+ Convidar por e-mail" }),
+		).toBeEnabled();
+	});
+
 	it("@spec:AC-023 a tabela lista nome, e-mail, perfil, subfunção, status e data", async () => {
 		usarAdministrador();
 		renderRoute("/users");
@@ -337,6 +350,77 @@ describe("gestão de usuários", () => {
 		).toBeInTheDocument();
 	});
 
+	it("@spec:AC-187 o Admin convida os três perfis, confere situação pendente e encerra a sessão", async () => {
+		usarAdministrador();
+		const api = installStatefulUsersMock();
+		renderRoute("/users");
+		await screen.findByText("Mariana Costa");
+
+		const convites = [
+			{ nome: "Admin E2E", email: "admin.e2e@example.test", role: "ADMIN" },
+			{
+				nome: "Captador E2E",
+				email: "captador.e2e@example.test",
+				role: "CAPTADOR",
+			},
+			{
+				nome: "Vendedor E2E",
+				email: "vendedor.e2e@example.test",
+				role: "VENDEDOR",
+			},
+		] as const;
+
+		for (const convite of convites) {
+			fireEvent.click(
+				screen.getByRole("button", { name: "+ Convidar por e-mail" }),
+			);
+			const dialog = screen.getByRole("dialog", {
+				name: "Convidar colaborador",
+			});
+			fireEvent.change(within(dialog).getByLabelText("Nome completo"), {
+				target: { value: convite.nome },
+			});
+			fireEvent.change(within(dialog).getByLabelText("E-mail corporativo"), {
+				target: { value: convite.email },
+			});
+			fireEvent.change(within(dialog).getByLabelText("Função operacional"), {
+				target: { value: convite.role },
+			});
+			fireEvent.click(
+				within(dialog).getByRole("button", { name: "Enviar convite" }),
+			);
+
+			expect(
+				await screen.findByText(convite.nome, { exact: true }),
+			).toBeInTheDocument();
+			const row = screen.getByText(convite.email).closest("tr");
+			expect(row).not.toBeNull();
+			if (row) {
+				expect(within(row).getByText("PENDENTE")).toBeInTheDocument();
+				expect(within(row).getAllByText(convite.role).length).toBeGreaterThan(
+					0,
+				);
+			}
+		}
+
+		const convitesEnviados = api.calls.filter(
+			(call) => call.method === "POST" && call.path === "/users/invite",
+		);
+		expect(convitesEnviados.map((call) => call.body)).toEqual(
+			convites.map((convite) => ({
+				name: convite.nome,
+				email: convite.email,
+				operational_role: convite.role,
+				role: convite.role === "ADMIN" ? "ADMIN" : "USUARIO",
+			})),
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "Sair da conta" }));
+		expect(
+			await screen.findByRole("heading", { name: "Bem-vindo de volta" }),
+		).toBeInTheDocument();
+	});
+
 	it("@spec:AC-167 a edição chama PATCH /users/{id} e recarrega a lista", async () => {
 		usarAdministrador();
 		const api = installApiMock();
@@ -373,7 +457,7 @@ describe("gestão de usuários", () => {
 		expect(listagens.length).toBeGreaterThanOrEqual(2);
 	});
 
-	it("@spec:AC-168 o bloqueio exige substituto e envia reassign_to_user_id", async () => {
+	it("@spec:AC-168 @spec:AC-190 o bloqueio exige substituto e envia reassign_to_user_id", async () => {
 		usarAdministrador();
 		const api = installApiMock();
 		renderRoute("/users");

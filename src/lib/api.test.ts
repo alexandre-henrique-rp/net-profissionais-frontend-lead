@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+	API_BASE_URL,
 	ApiError,
 	apiDownload,
 	apiFetch,
@@ -16,9 +17,7 @@ describe("cliente HTTP", () => {
 
 		const [url, init] = api.fetch.mock.calls[0];
 
-		expect(String(url)).toBe(
-			"http://localhost:3000/api/v1/leads/pool?page=2&uf=MG",
-		);
+		expect(String(url)).toBe(`${API_BASE_URL}/leads/pool?page=2&uf=MG`);
 		expect(init?.credentials).toBe("include");
 		// Valor vazio não vira `sector=`.
 		expect(String(url)).not.toContain("sector");

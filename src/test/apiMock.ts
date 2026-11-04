@@ -333,6 +333,7 @@ interface PoolLeadInput {
 	tradeName: string;
 	cnpj: string;
 	sector: string;
+	customSector?: string;
 	city: string;
 	state: string;
 	companySize: string;
@@ -351,6 +352,7 @@ const POOL_LEADS: PoolLeadInput[] = [
 		tradeName: "Solar Tech",
 		cnpj: "33456789000102",
 		sector: "SOLAR",
+		customSector: "Instaladores",
 		city: "Belo Horizonte",
 		state: "MG",
 		companySize: "EPP",
@@ -435,6 +437,7 @@ function poolItem(input: PoolLeadInput, index: number) {
 		closeProbability: null,
 		expectedCloseDate: null,
 		proposalScope: null,
+		customSector: input.customSector ?? null,
 		lossReasonCode: null,
 		lossReasonNotes: null,
 		version: 1,
@@ -684,23 +687,23 @@ export const USERS_PAGE = {
 };
 
 export const CNPJ_LOOKUP = {
-	company_name: "Empresa de demonstração",
-	trade_name: "Demonstração",
-	primary_cnae: "4321500",
-	cnae_description: "Serviços profissionais",
-	capital_social: 250000,
-	postal_code: "30130-110",
+	companyName: "Empresa de demonstração",
+	tradeName: "Demonstração",
+	primaryCnae: "4321500",
+	cnaeDescription: "Serviços profissionais",
+	capitalSocial: 250000,
+	postalCode: "30130-110",
 	street: "Av. Afonso Pena",
 	number: "1500",
 	complement: "Sala 402",
 	neighborhood: "Centro",
 	city: "Belo Horizonte",
 	state: "MG",
-	company_size: "EPP",
-	sector: "SOLAR",
+	sector: "CONSTRUCAO",
+	companySize: "EPP",
 	contacts: [
-		{ name: "Marcelo Dias", role: "Sócio", is_decision_maker: true },
-		{ name: "Ana Souza", role: "Financeiro", is_decision_maker: false },
+		{ name: "Marcelo Dias", role: "Sócio", isDecisionMaker: true },
+		{ name: "Ana Souza", role: "Financeiro", isDecisionMaker: false },
 	],
 };
 

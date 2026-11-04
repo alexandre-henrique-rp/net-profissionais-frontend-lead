@@ -8,7 +8,12 @@ import {
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Link,
+	redirect,
+	useNavigate,
+} from "@tanstack/react-router";
 import type { CSSProperties, ReactNode } from "react";
 import { Fragment, useMemo, useState } from "react";
 import { z } from "zod";
@@ -264,6 +269,21 @@ function PipelinePage() {
 			),
 		};
 	});
+	const visibleCardsCount = visibleGroups.reduce(
+		(total, group) => total + group.cards.length,
+		0,
+	);
+	const hasActiveAdminFilters =
+		session.operationalRole === "ADMIN" &&
+		(sellerFilter !== "all" ||
+			cityFilter !== "todas" ||
+			minimumTicket.trim() !== "");
+
+	function clearPipelineFilters() {
+		setSellerFilter("all");
+		setCityFilter("todas");
+		setMinimumTicket("");
+	}
 
 	function clearFeedback() {
 		setNotice("");
@@ -324,6 +344,7 @@ function PipelinePage() {
 		saveTerms.mutate(
 			{
 				id: termsTarget.id,
+				version: termsTarget.version,
 				ticket_value: ticket === "" ? undefined : Number(ticket),
 				close_probability: probability === "" ? undefined : Number(probability),
 				expected_close_date: forecast || undefined,
@@ -347,6 +368,7 @@ function PipelinePage() {
 		markLost.mutate(
 			{
 				id: lostTarget.id,
+				version: lostTarget.version,
 				lossReasonCode: lostReason,
 				lossReasonNotes: lostNotes.trim() || undefined,
 			},
@@ -538,7 +560,46 @@ function PipelinePage() {
 				</div>
 			) : null}
 
-			{pipeline.isSuccess && view === "kanban" ? (
+			{pipeline.isSuccess && visibleCardsCount === 0 ? (
+				<Card className="mt-4 p-6">
+					<div
+						aria-live="polite"
+						aria-atomic="true"
+						className="grid justify-items-start gap-2 text-sm"
+					>
+						<p className="font-semibold text-ink-strong">
+							{hasActiveAdminFilters
+								? "Nenhuma oportunidade corresponde aos filtros."
+								: session.operationalRole === "ADMIN"
+									? "Sua equipe ainda não tem oportunidades no funil."
+									: "Sua carteira está vazia no momento."}
+						</p>
+						<p className="text-xs text-ink-muted">
+							{hasActiveAdminFilters
+								? "Limpe os filtros para consultar outras oportunidades."
+								: "Acesse o Pool de Leads para encontrar oportunidades disponíveis."}
+						</p>
+						{hasActiveAdminFilters ? (
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={clearPipelineFilters}
+							>
+								Limpar filtros
+							</Button>
+						) : (
+							<Link
+								to="/leads-pool"
+								className="text-xs font-bold text-brand-600 hover:underline"
+							>
+								Acessar Pool de Leads
+							</Link>
+						)}
+					</div>
+				</Card>
+			) : null}
+
+			{pipeline.isSuccess && visibleCardsCount > 0 && view === "kanban" ? (
 				<DndContext sensors={sensors} onDragEnd={handleDragEnd}>
 					<div className="flex gap-3 overflow-x-auto pb-4">
 						{visibleGroups.map((group) => (
@@ -563,7 +624,7 @@ function PipelinePage() {
 				</DndContext>
 			) : null}
 
-			{pipeline.isSuccess && view === "lista" ? (
+			{pipeline.isSuccess && visibleCardsCount > 0 && view === "lista" ? (
 				<Card className="overflow-hidden p-0">
 					{session.operationalRole === "ADMIN" ? (
 						<div className="grid gap-3 border-b border-line bg-surface p-4 sm:grid-cols-2 xl:grid-cols-3">

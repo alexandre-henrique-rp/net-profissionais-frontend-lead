@@ -22,17 +22,28 @@ export function Tabs<T extends string>({
 	className = "",
 	tone = "accent",
 }: TabsProps<T>) {
+	const trackStyle =
+		tone === "brand"
+			? "h-[42px] gap-0 bg-[#e5e7eb] p-[3px]"
+			: "h-[44px] gap-1.5 bg-slate-100 p-1";
+	const tabStyle =
+		tone === "brand" ? "h-[34px] text-[12px]" : "h-[36px] text-[13px]";
+
 	return (
 		<div
 			role="tablist"
-			className={`flex h-[44px] items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100 p-1 ${className}`}
+			className={`flex items-center rounded-lg border border-slate-200 ${trackStyle} ${className}`}
 		>
 			{items.map((item) => {
 				const active = item.value === value;
 				const activeBg =
 					tone === "brand"
-						? "bg-brand-500 font-bold text-white shadow-xs"
+						? "bg-gradient-to-br from-brand-500 to-brand-600 font-bold text-white shadow-xs"
 						: "bg-accent-500 font-bold text-white shadow-xs";
+				const inactiveText =
+					tone === "brand"
+						? "font-semibold text-[#4d484d] hover:bg-white/60"
+						: "font-semibold text-slate-600 hover:bg-white/60";
 
 				return (
 					<button
@@ -41,10 +52,8 @@ export function Tabs<T extends string>({
 						role="tab"
 						aria-selected={active}
 						onClick={() => onChange(item.value)}
-						className={`h-[36px] flex-1 rounded-md text-[13px] transition-colors ${
-							active
-								? activeBg
-								: "font-semibold text-slate-600 hover:bg-white/60"
+						className={`flex-1 rounded-md transition-colors ${tabStyle} ${
+							active ? activeBg : inactiveText
 						}`}
 					>
 						{item.label}

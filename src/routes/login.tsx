@@ -4,7 +4,7 @@ import { type FormEvent, useState } from "react";
 import { LoginHero } from "#/components/layout/LoginHero";
 import { PublicShell } from "#/components/layout/PublicShell";
 import { Button } from "#/components/ui/Button";
-import { Field, TextInput } from "#/components/ui/Field";
+import { TextInput } from "#/components/ui/Field";
 import { Tabs } from "#/components/ui/Tabs";
 import { ApiError, apiFetch } from "#/lib/api";
 import { sessionQueryKey } from "#/lib/session";
@@ -32,7 +32,6 @@ function describeLoginError(error: unknown): string {
 
 function LoginPage() {
 	const [perfil, setPerfil] = useState<Perfil>("administrador");
-	const [showPassword, setShowPassword] = useState(false);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -63,166 +62,126 @@ function LoginPage() {
 		<PublicShell hero={<LoginHero />}>
 			<form
 				onSubmit={handleSubmit}
-				className="w-full max-w-[480px] overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xl"
+				className="relative h-[680px] w-full max-w-[500px] overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-[0_10px_28px_rgba(0,0,0,0.14)]"
 			>
-				{/* Barra vermelha de topo do Penpot Tela 01-L */}
-				<div className="h-1.5 w-full bg-brand-500" />
+				<div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-br from-brand-500 to-brand-600" />
 
-				<div className="flex flex-col gap-5 p-7 sm:p-9">
-					{/* Cabeçalho do Card: Logo à esquerda + Selo Seguro à direita */}
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-2.5">
-							<div className="flex size-8 items-center justify-center rounded-lg bg-brand-500 text-xs font-black text-white shadow-xs">
-								NP
-							</div>
-							<div>
-								<span className="block text-base font-bold tracking-tight text-slate-900 leading-none">
-									NETProfissional
-								</span>
-								<span className="block text-[10px] font-semibold text-slate-400 leading-tight">
-									Gerador de Leads
-								</span>
-							</div>
-						</div>
-						<span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700">
-							🔒 Acesso Seguro
-						</span>
+				<div className="absolute left-4 right-4 top-[38px] flex items-center justify-between sm:left-6 sm:right-9">
+					<div className="flex h-8 items-center gap-[6px]">
+						<img
+							src="/NP07.svg"
+							alt=""
+							aria-hidden="true"
+							className="h-6 w-8 sm:h-8 sm:w-10"
+						/>
+						<img
+							src="/NP08-light.svg"
+							alt="NETProfissional"
+							className="h-5 w-[116px] object-contain object-left sm:h-[25px] sm:w-[158px]"
+						/>
 					</div>
+					<span className="inline-flex h-[26px] w-[110px] items-center justify-center rounded-full border border-amber-600 bg-amber-100 px-2 text-[9px] font-semibold text-[#d97706] sm:px-[10px] sm:text-[10px]">
+						🔒 Acesso Seguro
+					</span>
+				</div>
 
-					{/* Título e Subtítulo */}
+				<div className="mx-6 pt-[92px] sm:mx-[47px]">
 					<div>
-						<h2 className="text-2xl font-bold tracking-tight text-slate-900">
+						<h2 className="text-2xl font-normal leading-[29px] tracking-tight text-slate-800">
 							Bem-vindo de volta
 						</h2>
-						<p className="mt-1 text-[13px] text-slate-500">
+						<p className="mt-[3px] text-[13px] leading-4 text-slate-500">
 							Acesse o painel comercial da NetProfissional
 						</p>
 					</div>
 
-					{/* Tabs Administrador / Usuário */}
 					<Tabs
 						tone="brand"
 						value={perfil}
 						onChange={setPerfil}
+						className="mt-[22px]"
 						items={[
 							{ value: "administrador", label: "Administrador" },
 							{ value: "usuario", label: "Usuário" },
 						]}
 					/>
 
-					{/* Campo E-mail Corporativo */}
-					<Field label="E-mail Corporativo">
-						<TextInput
-							type="email"
-							name="email"
-							autoComplete="email"
-							required
-							placeholder="seu.email@empresa.com.br"
-							value={email}
-							onChange={(event) => setEmail(event.target.value)}
-						/>
-					</Field>
+					<div className="mt-[19px]">
+						<label htmlFor="email-input" className="block">
+							<span className="mb-2 block text-[12px] font-bold leading-[14px] text-slate-800">
+								E-mail Corporativo
+							</span>
+							<TextInput
+								id="email-input"
+								type="email"
+								name="email"
+								autoComplete="email"
+								required
+								placeholder="seu.email@empresa.com.br"
+								value={email}
+								onChange={(event) => setEmail(event.target.value)}
+							/>
+						</label>
+					</div>
 
-					{/* Campo Senha com link Esqueceu a Senha alinhado à direita na mesma linha */}
-					<div>
-						<div className="mb-1 flex items-center justify-between">
+					<div className="mt-5">
+						<div className="mb-2 flex items-center justify-between">
 							<label
 								htmlFor="senha-input"
-								className="text-xs font-bold text-slate-700"
+								className="text-xs font-bold leading-[14px] text-slate-800"
 							>
 								Senha de Acesso
 							</label>
 							<Link
 								to="/recuperar-senha"
-								className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+								className="text-xs font-bold leading-[14px] text-sky-600 hover:text-sky-700 hover:underline"
 							>
 								Esqueceu a senha?
 							</Link>
 						</div>
-						<div className="relative flex items-center">
-							<TextInput
-								id="senha-input"
-								type={showPassword ? "text" : "password"}
-								name="password"
-								autoComplete="current-password"
-								required
-								placeholder="••••••••••••••••"
-								className="pr-10"
-								value={password}
-								onChange={(event) => setPassword(event.target.value)}
-							/>
-							<button
-								type="button"
-								onClick={() => setShowPassword(!showPassword)}
-								className="absolute right-3 text-slate-400 hover:text-slate-600 focus:outline-none"
-								aria-label={showPassword ? "Ocultar senha" : "Ver senha"}
-							>
-								{showPassword ? "👁️" : "👁️‍🗨️"}
-							</button>
-						</div>
-					</div>
-
-					{/* Lembrar neste navegador */}
-					<div className="flex items-center gap-2">
-						<input
-							id="lembrar-checkbox"
-							type="checkbox"
-							defaultChecked
-							className="size-4 rounded border-slate-300 text-brand-500 focus:ring-brand-500"
+						<TextInput
+							id="senha-input"
+							type="password"
+							name="password"
+							autoComplete="current-password"
+							required
+							placeholder="••••••••••••••••"
+							value={password}
+							onChange={(event) => setPassword(event.target.value)}
 						/>
-						<label
-							htmlFor="lembrar-checkbox"
-							className="text-xs font-medium text-slate-600 cursor-pointer select-none"
-						>
-							Lembrar neste navegador
-						</label>
 					</div>
 
-					{/* Erro de autenticação devolvido pelo contrato */}
 					{errorMessage ? (
 						<p
 							role="alert"
-							className="rounded-xl border border-brand-500/30 bg-brand-50 p-3 text-xs font-semibold text-brand-600"
+							className="mt-4 rounded-lg border border-brand-500/30 bg-brand-50 p-3 text-xs font-semibold text-brand-600"
 						>
 							{errorMessage}
 						</p>
 					) : null}
 
-					{/* Botão de Entrar */}
+					<div className="mt-5 flex h-[62px] items-start rounded-lg border border-emerald-600 bg-emerald-100 px-[15px] py-[9px]">
+						<div>
+							<p className="text-[11px] font-bold leading-[14px] text-emerald-700">
+								🔒 Conexão Criptografada e Segura
+							</p>
+							<p className="mt-0.5 text-[11px] leading-[14px] text-[#4d484d]">
+								Ambiente protegido por protocolo SSL/TLS com armazenamento
+								seguro de credenciais.
+							</p>
+						</div>
+					</div>
+
 					<Button
 						type="submit"
 						variant="brand"
 						size="lg"
 						disabled={login.isPending}
 						aria-busy={login.isPending}
-						className="w-full text-sm font-bold shadow-md shadow-brand-500/20 py-3.5 disabled:opacity-60"
+						className="mt-7 w-full rounded-md bg-gradient-to-br from-brand-500 to-brand-600 text-sm font-bold shadow-[0_6px_12px_rgba(0,0,0,0.16)]"
 					>
 						ENTRAR NO PAINEL DE LEADS →
 					</Button>
-
-					{/* Link de Ativação / Primeiro Acesso */}
-					<div className="flex justify-center -mt-1">
-						<Link
-							to="/ativar-conta"
-							className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline"
-						>
-							Primeiro acesso? Ativar conta
-						</Link>
-					</div>
-
-					{/* Caixa de Segurança Criptografada Verde */}
-					<div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-3.5 flex items-start gap-3">
-						<span className="text-base leading-none">🔒</span>
-						<div>
-							<p className="text-xs font-bold text-emerald-800">
-								🔒 Conexão Criptografada e Segura
-							</p>
-							<p className="mt-0.5 text-[11px] leading-relaxed text-emerald-700">
-								Ambiente protegido por protocolo SSL/TLS com armazenamento
-								seguro de credenciais.
-							</p>
-						</div>
-					</div>
 				</div>
 			</form>
 		</PublicShell>

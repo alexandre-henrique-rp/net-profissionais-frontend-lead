@@ -11,14 +11,19 @@ describe("tela de login", () => {
 			await screen.findByRole("heading", { name: /Gerador e Gerenciador/ }),
 		).toBeInTheDocument();
 		expect(screen.getByText("Inteligente de Leads")).toBeInTheDocument();
+		expect(
+			screen.getByRole("img", {
+				name: "NETProfissional — Tecnologia para sua empresa",
+			}),
+		).toHaveAttribute("src", "/NP08-light.svg");
 
 		expect(
 			screen.getByRole("heading", { name: "Bem-vindo de volta" }),
 		).toBeInTheDocument();
 		expect(screen.getByText("🔒 Acesso Seguro")).toBeInTheDocument();
 		expect(
-			screen.getByRole("link", { name: "Primeiro acesso? Ativar conta" }),
-		).toHaveAttribute("href", "/ativar-conta");
+			screen.getByRole("link", { name: "Esqueceu a senha?" }),
+		).toHaveAttribute("href", "/recuperar-senha");
 	});
 
 	it("@spec:AC-019 o card tem as abas Administrador e Usuário", async () => {

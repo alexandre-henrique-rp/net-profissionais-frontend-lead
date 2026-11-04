@@ -71,7 +71,7 @@ describe("sidebar da aplicação", () => {
 		expect(screen.queryByText("Usuários & Permissões")).not.toBeInTheDocument();
 	});
 
-	it("@spec:AC-016 captador vê a entrada por busca de CNPJ", async () => {
+	it("@spec:AC-016 @spec:AC-211 captador vê a entrada por busca de CNPJ", async () => {
 		definirSessao({
 			name: "Mariana Costa",
 			email: "mariana.costa@netprofissional.com.br",
@@ -84,7 +84,12 @@ describe("sidebar da aplicação", () => {
 		expect(
 			await screen.findByText("Dashboard do Captador"),
 		).toBeInTheDocument();
+		expect(screen.getByText("Pool de Leads")).toBeInTheDocument();
 		expect(screen.getByText("Novo Lead (Busca CNPJ)")).toBeInTheDocument();
 		expect(screen.queryByText("Gestão da Equipe")).not.toBeInTheDocument();
+		expect(screen.queryByText("Usuários & Permissões")).not.toBeInTheDocument();
+		expect(screen.queryByText("Funil de Vendas")).not.toBeInTheDocument();
+		expect(screen.queryByText("Meu Funil (Kanban)")).not.toBeInTheDocument();
+		expect(screen.queryByText("Lista de Leads")).not.toBeInTheDocument();
 	});
 });
