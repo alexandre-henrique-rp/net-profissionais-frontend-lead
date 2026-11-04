@@ -4,7 +4,7 @@
 # Fluxo de "Atualizar":
 #   1. git pull (recebe o código mais recente)
 #   2. docker build da imagem (instala libs + vite build + runtime node)
-#   3. recria o container "netprofissional-frontend" servindo na porta definida por PORTA (padrão 8080)
+#   3. recria o container "netprofissional-frontend" servindo na porta definida por PORTA (padrão 3001)
 #   4. limpeza das imagens Docker não utilizadas
 #
 # Uso:
@@ -13,7 +13,7 @@
 #
 # Variáveis opcionais:
 #   VITE_API_URL → URL da API gravada no bundle (padrão: http://localhost:3000/api/v1)
-#   PORTA        → porta do host onde o SPA responde (padrão: 8080)
+#   PORTA        → porta do host onde o SPA responde (padrão: 3001)
 #   IMAGEM       → nome da imagem (padrão: net-profissionais-frontend-build)
 #   CONTAINER    → nome do container (padrão: netprofissional-frontend)
 
@@ -24,7 +24,7 @@ cd "$DIR"
 
 IMAGEM="${IMAGEM:-net-profissionais-frontend-build}"
 CONTAINER="${CONTAINER:-netprofissional-frontend}"
-PORTA="${PORTA:-8080}"
+PORTA="${PORTA:-3001}"
 VITE_API_URL="${VITE_API_URL:-http://localhost:3000/api/v1}"
 
 atualizar() {
@@ -61,7 +61,7 @@ menu() {
 		echo "┌──────────────────────────────────────────────────┐"
 		echo "│   NetProfissional — Build do Frontend            │"
 		echo "└──────────────────────────────────────────────────┘"
-		echo "  1) Atualizar (git pull → build → container :8080 → limpeza)"
+		echo "  1) Atualizar (git pull → build → container :3001 → limpeza)"
 		echo "  2) Sair"
 		echo
 		read -r -p "Escolha uma opção [1-2]: " opcao
