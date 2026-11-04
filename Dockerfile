@@ -30,4 +30,4 @@ COPY --from=build /app/dist ./dist
 # Monte aqui um volume nomeado ou uma pasta do host — o build é copiado na
 # subida do container, então funciona com os dois tipos de mount.
 VOLUME ["/output"]
-CMD ["sh", "-c", "rm -rf /output/* && cp -a /build/dist/. /output/ && echo 'Build entregue em /output'"]
+CMD ["sh", "-c", "rm -rf /output/* && cp -r /build/dist/. /output/ && echo 'Build entregue em /output'"]

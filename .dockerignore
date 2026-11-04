@@ -21,6 +21,6 @@ e2e
 
 # arquivos do próprio docker
 Dockerfile
-docker-compose.yml
 .dockerignore
 deploy.sh
+build
