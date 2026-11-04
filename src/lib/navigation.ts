@@ -28,14 +28,14 @@ export const NAVIGATION: Record<OperationalRole, NavGroup[]> = {
 			title: "OPERAÇÃO COMERCIAL",
 			items: [
 				{ to: "/dashboard", label: "Dashboard Comercial", icon: "📈" },
-				{ to: "/leads-pool", label: "Pool de Leads", icon: "📥", badge: 4 },
+				{ to: "/leads-pool", label: "Pool de Leads", icon: "📥" },
 				{ to: "/pipeline", label: "Funil de Vendas", icon: "📊" },
 			],
 		},
 		{
 			title: "GESTÃO DA EQUIPE",
 			items: [
-				{ to: "/users", label: "Usuários & Permissões", icon: "👥", badge: 5 },
+				{ to: "/users", label: "Usuários & Permissões", icon: "👥" },
 			],
 		},
 	],
@@ -44,7 +44,7 @@ export const NAVIGATION: Record<OperationalRole, NavGroup[]> = {
 			title: "OPERAÇÃO COMERCIAL",
 			items: [
 				{ to: "/dashboard", label: "Dashboard do Vendedor", icon: "📊" },
-				{ to: "/leads-pool", label: "Pool de Leads", icon: "📥", badge: 4 },
+				{ to: "/leads-pool", label: "Pool de Leads", icon: "📥" },
 				{
 					to: "/pipeline",
 					label: "Meu Funil (Kanban)",
@@ -66,7 +66,7 @@ export const NAVIGATION: Record<OperationalRole, NavGroup[]> = {
 			title: "PROSPECÇÃO & ENTRADA",
 			items: [
 				{ to: "/dashboard", label: "Dashboard do Captador", icon: "📈" },
-				{ to: "/leads-pool", label: "Pool de Leads", icon: "📥", badge: 4 },
+				{ to: "/leads-pool", label: "Pool de Leads", icon: "📥" },
 				{
 					to: "/leads-pool",
 					label: "Novo Lead (Busca CNPJ)",
