@@ -3,8 +3,8 @@
 #
 # Fluxo de "Atualizar":
 #   1. git pull (recebe o código mais recente)
-#   2. docker build da imagem (instala libs + vite build + runtime node)
-#   3. recria o container "netprofissional-frontend" servindo na porta definida por PORTA (padrão 3001)
+#   2. docker compose build da imagem (instala libs + vite build + runtime node)
+#   3. docker compose up -d recria o container servindo na porta PORTA (padrão 3001)
 #   4. limpeza das imagens Docker não utilizadas
 #
 # Uso:
@@ -14,7 +14,6 @@
 # Variáveis opcionais:
 #   VITE_API_URL → URL da API gravada no bundle (padrão: http://localhost:3000/api/v1)
 #   PORTA        → porta do host onde o SPA responde (padrão: 3001)
-#   IMAGEM       → nome da imagem (padrão: net-profissionais-frontend-build)
 #   CONTAINER    → nome do container (padrão: netprofissional-frontend)
 
 set -euo pipefail
@@ -22,10 +21,23 @@ set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
 
-IMAGEM="${IMAGEM:-net-profissionais-frontend-build}"
+PROJECT="net-profissionais-frontend-lead"
 CONTAINER="${CONTAINER:-netprofissional-frontend}"
 PORTA="${PORTA:-3001}"
 VITE_API_URL="${VITE_API_URL:-http://localhost:3000/api/v1}"
+
+if docker compose version >/dev/null 2>&1; then
+	COMPOSE=(docker compose --project-name "$PROJECT" --file "$DIR/docker-compose.yml")
+elif command -v docker-compose >/dev/null 2>&1; then
+	COMPOSE=(docker-compose --project-name "$PROJECT" --file "$DIR/docker-compose.yml")
+else
+	echo "ERRO: docker compose não foi encontrado." >&2
+	exit 1
+fi
+
+compose() {
+	PORTA="$PORTA" VITE_API_URL="$VITE_API_URL" "${COMPOSE[@]}" "$@"
+}
 
 atualizar() {
 	echo
@@ -34,21 +46,27 @@ atualizar() {
 
 	echo
 	echo "== 2/4 · build da imagem (instala libs + vite build) =="
-	docker build --build-arg "VITE_API_URL=${VITE_API_URL}" -t "$IMAGEM" .
+	compose build frontend
 
 	echo
 	echo "== 3/4 · recriando o container $CONTAINER na porta $PORTA =="
-	docker rm -f "$CONTAINER" >/dev/null 2>&1 || true
-	docker run -d --name "$CONTAINER" --restart unless-stopped \
-		-p "${PORTA}:3001" "$IMAGEM"
+	compose up -d --force-recreate frontend
 
 	echo
 	echo "== 4/4 · limpeza das imagens não utilizadas =="
 	docker image prune -f
 
 	echo
-	if command -v curl >/dev/null 2>&1 && \
-		curl --fail --silent --max-time 5 "http://127.0.0.1:${PORTA}/" >/dev/null; then
+	nao=0
+	while ((nao < 10)); do
+		if command -v curl >/dev/null 2>&1 && \
+			curl --fail --silent --max-time 2 "http://127.0.0.1:${PORTA}/" >/dev/null; then
+			break
+		fi
+		sleep 1
+		nao=$((nao + 1))
+	done
+	if ((nao < 10)); then
 		echo "✔ Frontend no ar em http://localhost:${PORTA}"
 	else
 		echo "Container $CONTAINER iniciado; verifique com: docker logs $CONTAINER"

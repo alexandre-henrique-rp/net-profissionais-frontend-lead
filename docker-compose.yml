@@ -1,0 +1,15 @@
+name: net-profissionais-frontend-lead
+
+# Container único que serve o build SPA na porta PORTA (padrão 3001), sem
+# proxy interno — quem faz proxy, se necessário, é o Nginx do servidor.
+services:
+  frontend:
+    build:
+      context: .
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api/v1}
+    image: netprofissionais-frontend-build:latest
+    container_name: netprofissional-frontend
+    restart: unless-stopped
+    ports:
+      - "${PORTA:-3001}:3001"
