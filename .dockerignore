@@ -1,0 +1,25 @@
+node_modules
+dist
+.output
+coverage
+.git
+.vscode
+.idea
+
+# segredos nunca entram no contexto de build
+.env
+.env.*
+!.env.example
+
+# artefatos de teste e relatórios
+test-results
+playwright-report
+blob-report
+.vitest-results.json
+e2e
+*.test.*
+
+# arquivos do próprio docker
+Dockerfile
+docker-compose.yml
+.dockerignore
