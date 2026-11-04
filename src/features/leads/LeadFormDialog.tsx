@@ -23,6 +23,8 @@ import { ApiError } from "#/lib/api";
 export interface LeadFormDialogProps {
 	open: boolean;
 	onClose: () => void;
+	/** Captadores não podem adicionar captações à própria carteira. */
+	allowSelfAssignment?: boolean;
 	/** Chamado depois que `POST /leads/manual` responde com o lead criado. */
 	onCreated?: (lead: PoolLeadItem) => void;
 }
@@ -53,6 +55,7 @@ function errorMessage(error: unknown): string {
 export function LeadFormDialog({
 	open,
 	onClose,
+	allowSelfAssignment = true,
 	onCreated,
 }: LeadFormDialogProps) {
 	const [tipo, setTipo] = useState<PersonType>("PJ");
@@ -216,7 +219,7 @@ export function LeadFormDialog({
 						},
 					]
 				: [],
-			assign_to_me: assignToMe,
+			assign_to_me: allowSelfAssignment && assignToMe,
 		};
 
 		createLead.mutate(payload, {
@@ -449,15 +452,17 @@ export function LeadFormDialog({
 						/>
 					</Field>
 				</div>
-				<label className="flex items-center gap-2 text-xs font-semibold text-ink">
-					<input
-						type="checkbox"
-						checked={assignToMe}
-						onChange={(event) => setAssignToMe(event.target.checked)}
-						className="size-4 rounded border-line-strong"
-					/>
-					Já incluir este lead na minha carteira
-				</label>
+				{allowSelfAssignment ? (
+					<label className="flex items-center gap-2 text-xs font-semibold text-ink">
+						<input
+							type="checkbox"
+							checked={assignToMe}
+							onChange={(event) => setAssignToMe(event.target.checked)}
+							className="size-4 rounded border-line-strong"
+						/>
+						Já incluir este lead na minha carteira
+					</label>
+				) : null}
 				{formError ? (
 					<p
 						role="alert"

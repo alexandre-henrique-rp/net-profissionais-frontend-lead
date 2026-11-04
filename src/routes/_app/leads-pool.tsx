@@ -571,6 +571,7 @@ function LeadsPoolPage() {
 			<LeadFormDialog
 				open={createOpen}
 				onClose={() => setCreateOpen(false)}
+				allowSelfAssignment={!isCaptor}
 				onCreated={(lead) =>
 					setNotice(`${companyNameOf(lead)} foi incluído no Pool de Leads.`)
 				}

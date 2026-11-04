@@ -165,7 +165,7 @@ describe("pool de leads", () => {
 		).toBeNull();
 	});
 
-	it("@spec:AC-210 Captador cadastra lead manual e o encontra na própria esteira", async () => {
+	it("@spec:AC-210 @spec:AC-218 Captador cadastra lead sem opção de autoatribuição", async () => {
 		testRole.current = "CAPTADOR";
 		const novaCaptacao = {
 			id: "tenant-lead-captacao",
@@ -230,6 +230,9 @@ describe("pool de leads", () => {
 
 		renderRoute("/leads-pool?novo=1");
 		const dialog = await screen.findByRole("dialog", { name: "Novo lead" });
+		expect(
+			within(dialog).queryByText("Já incluir este lead na minha carteira"),
+		).not.toBeInTheDocument();
 		fireEvent.change(within(dialog).getByLabelText("CNPJ"), {
 			target: { value: "12.345.678/0001-90" },
 		});
@@ -253,6 +256,7 @@ describe("pool de leads", () => {
 			person_type: "PJ",
 			cnpj: "12345678000190",
 			company_name: "Nova Captação Ltda",
+			assign_to_me: false,
 		});
 
 		const esteira = await screen.findByRole("table");
