@@ -88,6 +88,20 @@ export function useInviteUser() {
 	});
 }
 
+/** Reenvia o convite de um colaborador pendente (`POST /users/{id}/resend-invite`). */
+export function useResendInvite() {
+	const client = useQueryClient();
+
+	return useMutation({
+		mutationFn: (id: string) =>
+			apiFetch<{ resent: true; email: string; expires_at: string }>(
+				`/users/${id}/resend-invite`,
+				{ method: "POST" },
+			),
+		onSuccess: () => client.invalidateQueries({ queryKey: usersQueryKey }),
+	});
+}
+
 /** Corpo de `PATCH /users/{id}` (o e-mail não é editável). */
 export interface UpdateUserInput {
 	id: string;

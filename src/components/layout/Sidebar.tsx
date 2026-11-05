@@ -1,5 +1,9 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { NAVIGATION } from "../../lib/navigation";
+import { poolQueryOptions } from "../../features/leads-pool/api";
+import { DEFAULT_POOL_FILTERS } from "../../features/leads-pool/data";
+import { usersQueryOptions } from "../../features/users/api";
+import { NAVIGATION, type NavItem } from "../../lib/navigation";
 import { ROLE_LABELS, type Session, useLogout } from "../../lib/session";
 import { Avatar } from "../ui/Avatar";
 
@@ -51,6 +55,27 @@ export function Sidebar({
 	const groups = NAVIGATION[session.operationalRole];
 	const logout = useLogout();
 
+	// Badges com contagens reais: Pool = leads sem responsável; Usuários =
+	// colaboradores que ainda não criaram a senha (só faz sentido para ADMIN).
+	const poolCount = useQuery({
+		...poolQueryOptions({ ...DEFAULT_POOL_FILTERS, page: 1, limit: 1 }),
+		enabled: session.operationalRole !== undefined,
+	});
+	const pendingCount = useQuery({
+		...usersQueryOptions({ status: "PENDING", limit: 1 }),
+		enabled: session.operationalRole === "ADMIN",
+	});
+
+	const badgeValue = (item: NavItem): number | undefined => {
+		if (item.badgeKey === "pool") {
+			return poolCount.data?.meta.total;
+		}
+		if (item.badgeKey === "users-pending") {
+			return pendingCount.data?.meta.total;
+		}
+		return item.badge;
+	};
+
 	return (
 		<>
 			{mobileOpen ? (
@@ -91,6 +116,7 @@ export function Sidebar({
 							<ul className="flex flex-col gap-1">
 								{group.items.map((item) => {
 									const active = isActive(item, pathname, search);
+									const badge = badgeValue(item);
 
 									return (
 										<li key={`${item.to}-${item.label}`}>
@@ -109,7 +135,7 @@ export function Sidebar({
 													{item.icon}
 												</span>
 												<span className="truncate">{item.label}</span>
-												{item.badge ? (
+												{badge ? (
 													<span
 														className={`ml-auto rounded-md px-2 py-0.5 text-[11px] font-bold ${
 															active
@@ -117,7 +143,7 @@ export function Sidebar({
 																: "bg-[#e2e8f0] text-[#475569]"
 														}`}
 													>
-														{item.badge}
+														{badge}
 													</span>
 												) : null}
 											</Link>

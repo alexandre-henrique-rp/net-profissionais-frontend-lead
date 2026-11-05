@@ -9,6 +9,7 @@ import { DataTable, type TableColumn } from "#/components/ui/DataTable";
 import {
 	useBlockUser,
 	useInviteUser,
+	useResendInvite,
 	useUpdateUser,
 	useUsers,
 } from "#/features/users/api";
@@ -46,6 +47,7 @@ function UsuariosPage() {
 	const session = useSession();
 	const usersQuery = useUsers({ limit: 20 });
 	const invite = useInviteUser();
+	const resendInvite = useResendInvite();
 	const update = useUpdateUser();
 	const block = useBlockUser();
 
@@ -201,6 +203,17 @@ function UsuariosPage() {
 						>
 							Editar
 						</Button>
+						{user.statusApi === "PENDING" ? (
+							<Button
+								size="sm"
+								variant="outline"
+								aria-label={`Reenviar convite para ${user.nome}`}
+								disabled={resendInvite.isPending}
+								onClick={() => resendInvite.mutate(user.id)}
+							>
+								Reenviar
+							</Button>
+						) : null}
 						<Button
 							size="sm"
 							variant="ghost"
@@ -217,7 +230,7 @@ function UsuariosPage() {
 			},
 		],
 		// `openDialog` é estável (`useCallback`); `session.userId` decide quem pode ser bloqueado.
-		[session.userId, openDialog],
+		[session.userId, openDialog, resendInvite],
 	);
 
 	return (

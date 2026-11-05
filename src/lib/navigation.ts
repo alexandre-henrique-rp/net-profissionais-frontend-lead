@@ -13,6 +13,8 @@ export interface NavItem {
 	label: string;
 	icon: string;
 	badge?: number;
+	/** Chave de contador real resolvida pela sidebar (pool, usuários pendentes). */
+	badgeKey?: "pool" | "users-pending";
 	/** Parâmetros de URL que o item exige para contar como ativo. */
 	search?: Record<string, string>;
 }
@@ -28,14 +30,24 @@ export const NAVIGATION: Record<OperationalRole, NavGroup[]> = {
 			title: "OPERAÇÃO COMERCIAL",
 			items: [
 				{ to: "/dashboard", label: "Dashboard Comercial", icon: "📈" },
-				{ to: "/leads-pool", label: "Pool de Leads", icon: "📥" },
+				{
+					to: "/leads-pool",
+					label: "Pool de Leads",
+					icon: "📥",
+					badgeKey: "pool",
+				},
 				{ to: "/pipeline", label: "Funil de Vendas", icon: "📊" },
 			],
 		},
 		{
 			title: "GESTÃO DA EQUIPE",
 			items: [
-				{ to: "/users", label: "Usuários & Permissões", icon: "👥" },
+				{
+					to: "/users",
+					label: "Usuários & Permissões",
+					icon: "👥",
+					badgeKey: "users-pending",
+				},
 			],
 		},
 	],
@@ -44,7 +56,12 @@ export const NAVIGATION: Record<OperationalRole, NavGroup[]> = {
 			title: "OPERAÇÃO COMERCIAL",
 			items: [
 				{ to: "/dashboard", label: "Dashboard do Vendedor", icon: "📊" },
-				{ to: "/leads-pool", label: "Pool de Leads", icon: "📥" },
+				{
+					to: "/leads-pool",
+					label: "Pool de Leads",
+					icon: "📥",
+					badgeKey: "pool",
+				},
 				{
 					to: "/pipeline",
 					label: "Meu Funil (Kanban)",
@@ -66,7 +83,12 @@ export const NAVIGATION: Record<OperationalRole, NavGroup[]> = {
 			title: "PROSPECÇÃO & ENTRADA",
 			items: [
 				{ to: "/dashboard", label: "Dashboard do Captador", icon: "📈" },
-				{ to: "/leads-pool", label: "Pool de Leads", icon: "📥" },
+				{
+					to: "/leads-pool",
+					label: "Pool de Leads",
+					icon: "📥",
+					badgeKey: "pool",
+				},
 				{
 					to: "/leads-pool",
 					label: "Novo Lead (Busca CNPJ)",

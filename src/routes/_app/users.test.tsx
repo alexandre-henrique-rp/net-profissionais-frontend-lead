@@ -1,4 +1,5 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { installApiMock, type MockResponse, USERS_PAGE } from "#/test/apiMock";
 import { renderRoute } from "#/test/renderRoute";
@@ -186,6 +187,43 @@ describe("gestão de usuários", () => {
 		);
 	});
 
+	it("@spec:AC-221 reenvia o convite só para quem está PENDENTE", async () => {
+		const api = installApiMock({
+			"POST /users/:id/resend-invite": ({ params }) =>
+				envelope({
+					resent: true,
+					email: "juliana.prado@netprofissional.com.br",
+					expires_at: "2026-10-30T12:00:00.000Z",
+				}),
+		});
+
+		renderRoute("/users");
+
+		const reenviar = await screen.findByRole("button", {
+			name: "Reenviar convite para Juliana Prado",
+		});
+
+		// ATIVO e BLOQUEADO não podem receber reenvio.
+		expect(
+			screen.queryByRole("button", { name: /Reenviar convite para Felipe/ }),
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole("button", { name: /Reenviar convite para Alexandre/ }),
+		).not.toBeInTheDocument();
+
+		await userEvent.click(reenviar);
+
+		await waitFor(() =>
+			expect(
+				api.calls.some(
+					(call) =>
+						call.method === "POST" &&
+						call.path === "/users/user-4/resend-invite",
+				),
+			).toBe(true),
+		);
+	});
+
 	it("@spec:AC-023 quem não é administrador é levado ao dashboard", async () => {
 		sessaoAtual.value = {
 			userId: "user-seller",
@@ -276,11 +314,14 @@ describe("gestão de usuários", () => {
 		expect(screen.getByText("CAPTADOR")).toBeInTheDocument();
 		expect(screen.getAllByText("VENDEDOR").length).toBeGreaterThanOrEqual(3);
 
+		// A badge da sidebar também consulta /users (limit=1); a listagem usa 20.
 		const listagem = api.calls.find(
-			(call) => call.method === "GET" && call.path === "/users",
+			(call) =>
+				call.method === "GET" &&
+				call.path === "/users" &&
+				call.url.searchParams.get("limit") === "20",
 		);
 		expect(listagem).toBeDefined();
-		expect(listagem?.url.searchParams.get("limit")).toBe("20");
 	});
 
 	it("@spec:AC-166 o convite chama POST /users/invite e recarrega a lista", async () => {
