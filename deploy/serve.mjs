@@ -21,7 +21,9 @@ const upstreams = (
 	.split(',')
 	.map((u) => new URL(u.trim()));
 
-function proxyApi(req, res, index = 0) {
+const MAX_BODY = 2 * 1024 * 1024;
+
+function sendToUpstream(req, res, body, index) {
 	const target = upstreams[index];
 	if (!target) {
 		res.writeHead(502, { 'Content-Type': 'application/json' });
@@ -34,7 +36,11 @@ function proxyApi(req, res, index = 0) {
 			port: target.port,
 			path: req.url,
 			method: req.method,
-			headers: { ...req.headers, host: target.host },
+			headers: {
+				...req.headers,
+				host: target.host,
+				'content-length': body.length,
+			},
 			timeout: 15000,
 		},
 		(reply) => {
@@ -43,8 +49,26 @@ function proxyApi(req, res, index = 0) {
 		},
 	);
 	upstream.on('timeout', () => upstream.destroy(new Error('timeout')));
-	upstream.on('error', () => proxyApi(req, res, index + 1));
-	req.pipe(upstream);
+	upstream.on('error', () => sendToUpstream(req, res, body, index + 1));
+	upstream.end(body);
+}
+
+function proxyApi(req, res) {
+	// O corpo é lido antes de proxiar: assim uma tentativa de retry para o
+	// outro slot envia o payload inteiro, nunca um stream meio consumido.
+	const chunks = [];
+	let size = 0;
+	req.on('data', (chunk) => {
+		size += chunk.length;
+		if (size > MAX_BODY) {
+			res.writeHead(413).end();
+			req.destroy();
+			return;
+		}
+		chunks.push(chunk);
+	});
+	req.on('end', () => sendToUpstream(req, res, Buffer.concat(chunks), 0));
+	req.on('error', () => res.destroy());
 }
 
 const types = {
