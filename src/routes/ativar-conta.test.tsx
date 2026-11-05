@@ -18,9 +18,10 @@ describe("ativação de conta", () => {
 		expect(submit).toBeEnabled();
 		fireEvent.click(submit);
 
-		expect(await screen.findByRole("status")).toHaveTextContent(
-			"Sua conta está pronta",
-		);
+		// Conta ativada leva direto ao login.
+		expect(
+			await screen.findByLabelText("E-mail Corporativo"),
+		).toBeInTheDocument();
 	});
 
 	it("@spec:AC-145 a ativação envia o token do convite e a senha", async () => {
@@ -35,9 +36,10 @@ describe("ativação de conta", () => {
 		});
 		fireEvent.click(screen.getByRole("button", { name: "Definir senha" }));
 
-		expect(await screen.findByRole("status")).toHaveTextContent(
-			"Sua conta está pronta",
-		);
+		// Conta ativada leva direto ao login.
+		expect(
+			await screen.findByLabelText("E-mail Corporativo"),
+		).toBeInTheDocument();
 		expect(api.calls).toContainEqual(
 			expect.objectContaining({
 				method: "POST",

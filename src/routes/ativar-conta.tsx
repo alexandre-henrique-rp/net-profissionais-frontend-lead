@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useMemo, useState } from "react";
 import { LoginHero } from "#/components/layout/LoginHero";
 import { PublicShell } from "#/components/layout/PublicShell";
@@ -21,7 +21,7 @@ function ActivateAccountPage() {
 	const { token = "" } = Route.useSearch();
 	const [password, setPassword] = useState("");
 	const [confirmation, setConfirmation] = useState("");
-	const [activated, setActivated] = useState(false);
+	const navigate = useNavigate();
 	const rules = useMemo(
 		() => [
 			{ label: "Pelo menos 8 caracteres", valid: password.length >= 8 },
@@ -41,7 +41,7 @@ function ActivateAccountPage() {
 				method: "POST",
 				body: { token, password },
 			}),
-		onSuccess: () => setActivated(true),
+		onSuccess: () => navigate({ to: "/login" }),
 	});
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -143,12 +143,6 @@ function ActivateAccountPage() {
 								? activate.error.message
 								: "Não foi possível ativar a conta. Peça um novo convite."}
 						</p>
-					) : null}
-
-					{activated ? (
-						<output className="rounded-xl border border-emerald-200 bg-emerald-50/90 p-3.5 text-xs font-semibold text-emerald-800">
-							Senha definida. Sua conta está pronta para acessar o painel.
-						</output>
 					) : null}
 
 					<Button
