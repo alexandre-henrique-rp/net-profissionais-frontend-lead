@@ -11,13 +11,10 @@ const root = resolve('dist');
 const assetsDir = join(root, 'assets');
 const port = Number(process.env.PORT ?? 3001);
 
-// Proxy same-origin de /api/* para os slots do backend (rede Docker
-// compartilhada). Tenta os upstreams em ordem em caso de falha de conexão —
-// durante um deploy blue-green sempre há um slot saudável.
-const upstreams = (
-	process.env.API_UPSTREAMS ??
-	'http://api-blue:3000,http://api-green:3000'
-)
+// Proxy same-origin de /api/* para o backend (rede Docker compartilhada).
+// Tenta os upstreams em ordem em caso de falha de conexão — durante o
+// recreate do deploy o serviço `api` fica alguns segundos fora do ar.
+const upstreams = (process.env.API_UPSTREAMS ?? 'http://api:3000')
 	.split(',')
 	.map((u) => new URL(u.trim()));
 

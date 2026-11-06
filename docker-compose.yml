@@ -1,8 +1,8 @@
 name: net-profissionais-frontend-lead
 
 # Container único que serve o build SPA na porta PORTA (padrão 3001), sem
-# proxy interno — quem faz proxy público, se necessário, é o Nginx do
-# servidor. O serve.mjs repassa /api/* aos slots do backend na rede Docker
+# proxy interno — quem encaminha o tráfego público é o Cloudflare Tunnel.
+# O serve.mjs repassa /api/* ao serviço `api` do backend na rede Docker
 # compartilhada, então o bundle pode usar caminho relativo (sem CORS).
 services:
   frontend:
@@ -14,7 +14,7 @@ services:
     container_name: netprofissional-frontend
     restart: unless-stopped
     environment:
-      API_UPSTREAMS: ${API_UPSTREAMS:-http://api-blue:3000,http://api-green:3000}
+      API_UPSTREAMS: ${API_UPSTREAMS:-http://api:3000}
     ports:
       - "${PORTA:-3001}:3001"
     networks:
