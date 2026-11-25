@@ -95,64 +95,64 @@ describe("sidebar da aplicação", () => {
 	});
 });
 
-	it("@spec:AC-222 badge do Pool mostra o total real e some quando é zero", async () => {
-		definirSessao({
-			name: "Alexandre Henrique",
-			email: "carlos.admin@netprofissional.com.br",
-			role: "ADMIN",
-			operationalRole: "ADMIN",
-		});
-
-		renderRoute("/dashboard");
-
-		const pool = await screen.findByRole("link", { name: /Pool de Leads/ });
-		await waitFor(() =>
-			expect(pool.textContent).toContain(String(POOL_PAGE.meta.total)),
-		);
+it("@spec:AC-222 badge do Pool mostra o total real e some quando é zero", async () => {
+	definirSessao({
+		name: "Alexandre Henrique",
+		email: "carlos.admin@netprofissional.com.br",
+		role: "ADMIN",
+		operationalRole: "ADMIN",
 	});
 
-	it("@spec:AC-222 badge do Pool some quando o total é zero", async () => {
-		installApiMock({
-			"GET /leads/pool": () => ({
-				body: {
-					success: true,
-					data: {
-						items: [],
-						meta: { page: 1, limit: 1, total: 0, has_more: false },
-					},
+	renderRoute("/dashboard");
+
+	const pool = await screen.findByRole("link", { name: /Pool de Leads/ });
+	await waitFor(() =>
+		expect(pool.textContent).toContain(String(POOL_PAGE.meta.total)),
+	);
+});
+
+it("@spec:AC-222 badge do Pool some quando o total é zero", async () => {
+	installApiMock({
+		"GET /leads/pool": () => ({
+			body: {
+				success: true,
+				data: {
+					items: [],
+					meta: { page: 1, limit: 1, total: 0, has_more: false },
 				},
-			}),
-		});
-		definirSessao({
-			name: "Alexandre Henrique",
-			email: "carlos.admin@netprofissional.com.br",
-			role: "ADMIN",
-			operationalRole: "ADMIN",
-		});
-
-		renderRoute("/dashboard");
-
-		const poolVazio = await screen.findByRole("link", {
-			name: /Pool de Leads/,
-		});
-		await new Promise((resolve) => setTimeout(resolve, 50));
-		expect(poolVazio.querySelector(".ml-auto")).toBeNull();
+			},
+		}),
+	});
+	definirSessao({
+		name: "Alexandre Henrique",
+		email: "carlos.admin@netprofissional.com.br",
+		role: "ADMIN",
+		operationalRole: "ADMIN",
 	});
 
-	it("@spec:AC-223 badge de Usuários conta pendentes e some quando é zero", async () => {
-		definirSessao({
-			name: "Alexandre Henrique",
-			email: "carlos.admin@netprofissional.com.br",
-			role: "ADMIN",
-			operationalRole: "ADMIN",
-		});
+	renderRoute("/dashboard");
 
-		renderRoute("/dashboard");
-
-		const usuarios = await screen.findByRole("link", {
-			name: /Usuários & Permissões/,
-		});
-		await waitFor(() =>
-			expect(usuarios.textContent).toContain(String(USERS_PAGE.meta.total)),
-		);
+	const poolVazio = await screen.findByRole("link", {
+		name: /Pool de Leads/,
 	});
+	await new Promise((resolve) => setTimeout(resolve, 50));
+	expect(poolVazio.querySelector(".ml-auto")).toBeNull();
+});
+
+it("@spec:AC-223 badge de Usuários conta pendentes e some quando é zero", async () => {
+	definirSessao({
+		name: "Alexandre Henrique",
+		email: "carlos.admin@netprofissional.com.br",
+		role: "ADMIN",
+		operationalRole: "ADMIN",
+	});
+
+	renderRoute("/dashboard");
+
+	const usuarios = await screen.findByRole("link", {
+		name: /Usuários & Permissões/,
+	});
+	await waitFor(() =>
+		expect(usuarios.textContent).toContain(String(USERS_PAGE.meta.total)),
+	);
+});
