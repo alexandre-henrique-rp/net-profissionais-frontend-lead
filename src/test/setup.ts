@@ -2,6 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach, beforeEach, vi } from "vitest";
 import { queryClient } from "#/lib/query-client";
+import { resetColorSchemeState } from "#/lib/theme";
 import { installApiMock } from "./apiMock";
 
 /**
@@ -34,11 +35,13 @@ if (typeof URL.createObjectURL !== "function") {
  */
 beforeEach(() => {
 	queryClient.clear();
+	resetColorSchemeState();
 	installApiMock();
 });
 
 afterEach(() => {
 	cleanup();
 	queryClient.clear();
+	resetColorSchemeState();
 	vi.restoreAllMocks();
 });

@@ -304,7 +304,7 @@ export function LeadDrawer({
 								{specialDates.map((date) => (
 									<li
 										key={date.id}
-										className="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-800"
+										className="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-800 dark:border-amber-700 dark:bg-amber-950/60 dark:text-amber-200"
 									>
 										<span>🎂</span>
 										<span>
@@ -360,7 +360,7 @@ export function LeadDrawer({
 						</h3>
 						<p className="text-ink-muted">
 							Ticket estimado:{" "}
-							<strong className="font-bold text-emerald-600">
+							<strong className="font-bold text-emerald-600 dark:text-emerald-400">
 								{formatCurrency(lead.ticket_value)}
 							</strong>
 						</p>

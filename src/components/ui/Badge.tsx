@@ -11,12 +11,15 @@ export type BadgeTone =
 
 const TONES: Record<BadgeTone, string> = {
 	neutral: "bg-ink-soft text-ink",
-	accent: "bg-accent-50 text-accent-500",
-	success: "bg-success-50 text-success-600",
-	warning: "bg-warning-50 text-warning-500 border border-warning-200",
-	info: "bg-info-50 text-info-500",
-	violet: "bg-violet-50 text-violet-500 border border-violet-200",
-	brand: "bg-brand-50 text-brand-600 border border-brand-500",
+	accent: "bg-accent-50 text-accent-500 dark:text-indigo-300",
+	success: "bg-success-50 text-success-600 dark:text-emerald-300",
+	warning:
+		"bg-warning-50 text-warning-500 border border-warning-200 dark:text-amber-300",
+	info: "bg-info-50 text-info-500 dark:text-sky-300",
+	violet:
+		"bg-violet-50 text-violet-500 border border-violet-200 dark:text-violet-300",
+	brand:
+		"bg-brand-50 text-brand-600 border border-brand-500 dark:text-rose-300",
 };
 
 export interface BadgeProps {

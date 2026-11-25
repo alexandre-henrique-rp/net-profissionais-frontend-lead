@@ -157,39 +157,43 @@ export const STAGE_HEADER_THEMES: Record<
 	{ bg: string; text: string; badge: string }
 > = {
 	"1_novo_lead": {
-		bg: "bg-sky-50 border-t-2 border-sky-400",
-		text: "text-sky-800",
-		badge: "bg-sky-100 text-sky-800",
+		bg: "bg-sky-50 border-t-2 border-sky-400 dark:bg-sky-950/50 dark:border-sky-500",
+		text: "text-sky-800 dark:text-sky-300",
+		badge: "bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-200",
 	},
 	"2_qualificacao": {
-		bg: "bg-emerald-50 border-t-2 border-emerald-400",
-		text: "text-emerald-800",
-		badge: "bg-emerald-100 text-emerald-800",
+		bg: "bg-emerald-50 border-t-2 border-emerald-400 dark:bg-emerald-950/50 dark:border-emerald-500",
+		text: "text-emerald-800 dark:text-emerald-300",
+		badge:
+			"bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200",
 	},
 	"3_apresentacao": {
-		bg: "bg-amber-50 border-t-2 border-amber-400",
-		text: "text-amber-800",
-		badge: "bg-amber-100 text-amber-800",
+		bg: "bg-amber-50 border-t-2 border-amber-400 dark:bg-amber-950/50 dark:border-amber-500",
+		text: "text-amber-800 dark:text-amber-300",
+		badge:
+			"bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200",
 	},
 	"4_proposta": {
-		bg: "bg-purple-50 border-t-2 border-purple-400",
-		text: "text-purple-800",
-		badge: "bg-purple-100 text-purple-800",
+		bg: "bg-purple-50 border-t-2 border-purple-400 dark:bg-purple-950/50 dark:border-purple-500",
+		text: "text-purple-800 dark:text-purple-300",
+		badge:
+			"bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-200",
 	},
 	"5_negociacao": {
-		bg: "bg-rose-50 border-t-2 border-rose-400",
-		text: "text-rose-800",
-		badge: "bg-rose-100 text-rose-800",
+		bg: "bg-rose-50 border-t-2 border-rose-400 dark:bg-rose-950/50 dark:border-rose-500",
+		text: "text-rose-800 dark:text-rose-300",
+		badge: "bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200",
 	},
 	"6_fechado_ganho": {
-		bg: "bg-emerald-50 border-t-2 border-emerald-500",
-		text: "text-emerald-900",
-		badge: "bg-emerald-100 text-emerald-900",
+		bg: "bg-emerald-50 border-t-2 border-emerald-500 dark:bg-emerald-950/60 dark:border-emerald-400",
+		text: "text-emerald-900 dark:text-emerald-200",
+		badge:
+			"bg-emerald-100 text-emerald-900 dark:bg-emerald-900/70 dark:text-emerald-100",
 	},
 	"7_perdido": {
-		bg: "bg-red-50 border-t-2 border-red-400",
-		text: "text-red-800",
-		badge: "bg-red-100 text-red-800",
+		bg: "bg-red-50 border-t-2 border-red-400 dark:bg-red-950/50 dark:border-red-500",
+		text: "text-red-800 dark:text-red-300",
+		badge: "bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-200",
 	},
 };
 

@@ -7,6 +7,7 @@ import { Button } from "#/components/ui/Button";
 import { Card } from "#/components/ui/Card";
 import { DataTable, type TableColumn } from "#/components/ui/DataTable";
 import { Dialog } from "#/components/ui/Dialog";
+import { AisaProspectingDialog } from "#/features/leads/AisaProspectingDialog";
 import { LeadFormDialog } from "#/features/leads/LeadFormDialog";
 import {
 	useActiveSellers,
@@ -215,6 +216,7 @@ function LeadsPoolPage() {
 
 	const [filters, setFilters] = useState<PoolFilters>(DEFAULT_POOL_FILTERS);
 	const [createOpen, setCreateOpen] = useState(false);
+	const [aisaOpen, setAisaOpen] = useState(false);
 	const [assignLead, setAssignLead] = useState<PoolLeadItem | null>(null);
 	const [assignee, setAssignee] = useState("");
 	const [notice, setNotice] = useState("");
@@ -320,19 +322,29 @@ function LeadsPoolPage() {
 					isCaptor ? "Esteira de Captações" : "Pool de Leads da NetProfissional"
 				}
 				actions={
-					<Button
-						variant="brand"
-						size="sm"
-						className="font-bold shadow-xs"
-						onClick={() => setCreateOpen(true)}
-					>
-						+ Novo Lead (Manual / CNPJ)
-					</Button>
+					<div className="flex flex-wrap items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							className="font-bold shadow-xs"
+							onClick={() => setAisaOpen(true)}
+						>
+							✨ Buscar Leads com Aisa
+						</Button>
+						<Button
+							variant="brand"
+							size="sm"
+							className="font-bold shadow-xs"
+							onClick={() => setCreateOpen(true)}
+						>
+							+ Novo Lead (Manual / CNPJ)
+						</Button>
+					</div>
 				}
 			/>
 
-			<div className="mb-6 rounded-xl border border-sky-200 bg-sky-50/60 px-5 py-3 shadow-xs">
-				<p className="text-[13px] font-bold text-sky-900">
+			<div className="mb-6 rounded-xl border border-sky-200 bg-sky-50/60 px-5 py-3 shadow-xs dark:border-sky-800/60 dark:bg-sky-950/40">
+				<p className="text-[13px] font-bold text-sky-900 dark:text-sky-200">
 					{isCaptor
 						? `📈 ESTEIRA DE CAPTAÇÕES • ${captureRows.length} captações em acompanhamento`
 						: `🎯 REPOSITÓRIO CENTRAL DE ENTRADA • ${meta?.total ?? 0} leads aguardando vendedor responsável`}
@@ -574,6 +586,16 @@ function LeadsPoolPage() {
 				allowSelfAssignment={!isCaptor}
 				onCreated={(lead) =>
 					setNotice(`${companyNameOf(lead)} foi incluído no Pool de Leads.`)
+				}
+			/>
+
+			<AisaProspectingDialog
+				open={aisaOpen}
+				onClose={() => setAisaOpen(false)}
+				onImported={(res) =>
+					setNotice(
+						`${res.importedCount} lead(s) importado(s) via Aisa para o Pool.`,
+					)
 				}
 			/>
 

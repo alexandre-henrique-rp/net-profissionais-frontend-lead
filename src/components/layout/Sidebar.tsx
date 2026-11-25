@@ -91,15 +91,15 @@ export function Sidebar({
 					mobileOpen
 						? "fixed inset-y-0 left-0 z-50 flex shadow-2xl"
 						: "hidden lg:flex"
-				} min-h-0 w-[250px] shrink-0 flex-col border-r border-[#e2e8f0] bg-white lg:h-full`}
+				} min-h-0 w-[250px] shrink-0 flex-col border-r border-line bg-surface lg:h-full`}
 			>
 				{mobileOpen ? (
-					<div className="flex items-center justify-between border-b border-[#e2e8f0] px-4 py-3">
-						<span className="text-sm font-bold text-slate-800">Navegação</span>
+					<div className="flex items-center justify-between border-b border-line px-4 py-3">
+						<span className="text-sm font-bold text-ink-strong">Navegação</span>
 						<button
 							type="button"
 							onClick={onMobileClose}
-							className="rounded-lg p-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+							className="rounded-lg p-1.5 text-xs font-semibold text-ink-muted hover:bg-ink-soft hover:text-ink-strong"
 						>
 							✕ Fechar
 						</button>
@@ -110,7 +110,7 @@ export function Sidebar({
 				<nav className="flex flex-1 flex-col gap-5 px-3 py-4 overflow-y-auto">
 					{groups.map((group) => (
 						<div key={group.title}>
-							<p className="px-3 pb-2 text-[11px] font-bold tracking-wider text-[#94a3b8] uppercase">
+							<p className="px-3 pb-2 text-[11px] font-bold tracking-wider text-ink-subtle uppercase">
 								{group.title}
 							</p>
 							<ul className="flex flex-col gap-1">
@@ -127,8 +127,8 @@ export function Sidebar({
 												aria-current={active ? "page" : undefined}
 												className={`flex h-9 w-[226px] mx-auto items-center gap-2.5 rounded-lg border px-3 text-[13px] transition-colors ${
 													active
-														? "border-brand-500 bg-brand-50 font-bold text-brand-600 shadow-xs"
-														: "border-transparent font-medium text-[#475569] hover:bg-slate-50 hover:text-slate-900"
+														? "border-brand-500 bg-brand-50 font-bold text-brand-600 shadow-xs dark:text-rose-300"
+														: "border-transparent font-medium text-ink hover:bg-canvas hover:text-ink-strong"
 												}`}
 											>
 												<span aria-hidden className="text-sm leading-none">
@@ -140,7 +140,7 @@ export function Sidebar({
 														className={`ml-auto rounded-md px-2 py-0.5 text-[11px] font-bold ${
 															active
 																? "bg-brand-500 text-white"
-																: "bg-[#e2e8f0] text-[#475569]"
+																: "bg-line text-ink"
 														}`}
 													>
 														{badge}
@@ -156,13 +156,13 @@ export function Sidebar({
 				</nav>
 
 				{/* Cartão de Perfil no Rodapé da Sidebar */}
-				<div className="mx-3 mb-3 mt-auto flex items-center gap-2 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-2.5">
+				<div className="mx-3 mb-3 mt-auto flex items-center gap-2 rounded-xl border border-line bg-canvas p-2.5">
 					<Avatar name={session.name} tone="brand" size="sm" />
 					<div className="min-w-0 flex-1 leading-tight text-left">
-						<p className="truncate text-[13px] font-bold text-[#0f172a]">
+						<p className="truncate text-[13px] font-bold text-ink-strong">
 							{session.name}
 						</p>
-						<p className="truncate text-[11px] font-semibold text-emerald-600">
+						<p className="truncate text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
 							● {ROLE_LABELS[session.operationalRole]}
 						</p>
 					</div>
@@ -172,7 +172,7 @@ export function Sidebar({
 						title="Sair da conta"
 						disabled={logout.isPending}
 						onClick={() => logout.mutate()}
-						className="shrink-0 rounded-lg px-2 py-1 text-[11px] font-bold text-[#475569] transition-colors hover:bg-slate-200 hover:text-slate-900 disabled:opacity-50"
+						className="shrink-0 rounded-lg px-2 py-1 text-[11px] font-bold text-ink transition-colors hover:bg-line hover:text-ink-strong disabled:opacity-50"
 					>
 						Sair
 					</button>

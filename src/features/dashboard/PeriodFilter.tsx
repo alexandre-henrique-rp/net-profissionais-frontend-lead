@@ -175,7 +175,7 @@ export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
 								}
 								className={`rounded-md border px-3 py-2 text-left text-xs font-semibold transition-colors ${
 									draft.period === preset.period
-										? "border-accent-500 bg-accent-50 text-accent-500"
+										? "border-accent-500 bg-accent-50 text-accent-500 dark:text-indigo-300"
 										: "border-line text-ink hover:bg-canvas"
 								}`}
 							>
@@ -198,7 +198,7 @@ export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
 										startDate: event.target.value,
 									}))
 								}
-								className="h-10 min-w-0 rounded-md border border-line-strong bg-canvas px-2 text-xs"
+								className="h-10 min-w-0 rounded-md border border-line-strong bg-canvas px-2 text-xs text-ink-strong"
 							/>
 						</label>
 						<label className="grid gap-1 text-xs font-semibold text-ink-strong">
@@ -214,12 +214,15 @@ export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
 										endDate: event.target.value,
 									}))
 								}
-								className="h-10 min-w-0 rounded-md border border-line-strong bg-canvas px-2 text-xs"
+								className="h-10 min-w-0 rounded-md border border-line-strong bg-canvas px-2 text-xs text-ink-strong"
 							/>
 						</label>
 					</div>
 					{!rangeIsValid ? (
-						<p role="alert" className="mt-2 text-xs text-brand-600">
+						<p
+							role="alert"
+							className="mt-2 text-xs text-brand-600 dark:text-rose-400"
+						>
 							A data inicial deve ser anterior à data final.
 						</p>
 					) : null}

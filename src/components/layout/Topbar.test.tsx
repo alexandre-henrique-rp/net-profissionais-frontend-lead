@@ -40,4 +40,32 @@ describe("topbar da aplicação", () => {
 			screen.getByRole("button", { name: "🔍 Buscar CNPJ" }),
 		).toBeInTheDocument();
 	});
+
+	it("alterna o tema entre claro e escuro ao clicar no botão da topbar", async () => {
+		renderRoute("/leads-pool");
+
+		const lightButton = await screen.findByRole("button", { name: "☀️ Light" });
+		expect(lightButton).toHaveAttribute("aria-pressed", "false");
+
+		fireEvent.click(lightButton);
+
+		const darkButton = await screen.findByRole("button", { name: "🌙 Dark" });
+		expect(darkButton).toHaveAttribute("aria-pressed", "true");
+		expect(
+			document.head
+				.querySelector('meta[name="color-scheme"]')
+				?.getAttribute("content"),
+		).toBe("dark");
+
+		fireEvent.click(darkButton);
+
+		expect(
+			await screen.findByRole("button", { name: "☀️ Light" }),
+		).toHaveAttribute("aria-pressed", "false");
+		expect(
+			document.head
+				.querySelector('meta[name="color-scheme"]')
+				?.getAttribute("content"),
+		).toBe("light dark");
+	});
 });

@@ -14,7 +14,7 @@ export interface KpiCardProps {
 
 const DELTA_TONE = {
 	up: "text-success-600",
-	down: "text-brand-600",
+	down: "text-brand-600 dark:text-rose-400",
 } as const;
 
 const SPARKLINE_TONE = {

@@ -102,7 +102,7 @@ function KanbanColumn({
 			</header>
 			<div
 				className={`flex min-h-64 flex-1 flex-col gap-2.5 rounded-b-xl border-x border-b border-line p-2.5 transition-colors ${
-					isOver ? "bg-accent-50/60" : "bg-slate-50/80"
+					isOver ? "bg-accent-50/60" : "bg-ink-soft/60"
 				}`}
 			>
 				{children}
@@ -134,7 +134,7 @@ function KanbanCard({
 			<Card
 				className={`p-3.5 shadow-xs transition-all hover:shadow-sm ${
 					card.has_alert
-						? "border-rose-300 bg-rose-50/20"
+						? "border-rose-300 bg-rose-50/20 dark:border-rose-500/50 dark:bg-rose-950/30"
 						: "border-line bg-surface"
 				} ${isDragging ? "opacity-50 ring-2 ring-accent-500" : ""}`}
 			>
@@ -150,12 +150,12 @@ function KanbanCard({
 					<p className="mt-1 text-[11px] text-ink-muted">
 						{cardLocation(card)}
 					</p>
-					<p className="mt-2 text-[14px] font-black text-emerald-600">
+					<p className="mt-2 text-[14px] font-black text-emerald-600 dark:text-emerald-400">
 						{formatCurrency(card.ticket_value)}
 					</p>
 
 					{card.has_alert ? (
-						<span className="mt-2.5 inline-flex items-center gap-1 rounded-sm border border-rose-300 bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700">
+						<span className="mt-2.5 inline-flex items-center gap-1 rounded-sm border border-rose-300 bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 dark:border-rose-500/50 dark:bg-rose-950/70 dark:text-rose-300">
 							🚨 Alerta de inatividade
 						</span>
 					) : null}

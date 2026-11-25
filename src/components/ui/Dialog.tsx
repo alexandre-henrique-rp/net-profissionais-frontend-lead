@@ -92,7 +92,7 @@ export function Dialog({
 	if (!open) return null;
 
 	return createPortal(
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-strong/45 p-4">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 dark:bg-black/70">
 			<div
 				ref={panelRef}
 				role="dialog"

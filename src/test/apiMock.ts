@@ -793,6 +793,90 @@ export function defaultHandlers(): Record<string, MockHandler> {
 			}),
 
 		"GET /integrations/cnpj/:cnpj": () => envelope(CNPJ_LOOKUP),
+		"GET /integrations/aisa/config": () =>
+			envelope({
+				hasAisaApiKey: true,
+				aisaApiKeyHint: "sk-...9876",
+				aisaBaseUrl: "https://api.aisa.one",
+				llmProvider: "AISA",
+				llmModel: "gpt-4o-mini",
+				llmBaseUrl: null,
+				hasLlmApiKey: false,
+				llmApiKeyHint: null,
+				updatedAt: "2026-11-24T22:00:00.000Z",
+			}),
+		"PUT /integrations/aisa/config": ({ body }) => {
+			const payload = (body ?? {}) as Record<string, unknown>;
+			return envelope({
+				hasAisaApiKey: true,
+				aisaApiKeyHint: "sk-...9876",
+				aisaBaseUrl:
+					typeof payload.aisa_base_url === "string"
+						? payload.aisa_base_url
+						: "https://api.aisa.one",
+				llmProvider:
+					typeof payload.llm_provider === "string"
+						? payload.llm_provider
+						: "AISA",
+				llmModel:
+					typeof payload.llm_model === "string"
+						? payload.llm_model
+						: "gpt-4o-mini",
+				llmBaseUrl:
+					typeof payload.llm_base_url === "string"
+						? payload.llm_base_url
+						: null,
+				hasLlmApiKey: Boolean(payload.llm_api_key),
+				llmApiKeyHint: payload.llm_api_key ? "key...1234" : null,
+				updatedAt: "2026-11-24T22:00:00.000Z",
+			});
+		},
+		"POST /integrations/aisa/search": () =>
+			envelope({
+				query: "empresas Energia Solar Belo Horizonte MG",
+				engineUsed: "tavily",
+				llmProvider: "AISA",
+				llmModel: "gpt-4o-mini",
+				llmUsed: true,
+				totalSources: 2,
+				warnings: [],
+				leads: [
+					{
+						companyName: "Helios Energia Solar LTDA",
+						tradeName: "Helios Solar",
+						cnpj: "11222333000144",
+						website: "https://heliossolar.com.br",
+						city: "Belo Horizonte",
+						state: "MG",
+						customSector: "Energia Solar",
+						companySize: "EPP",
+						temperature: "QUENTE",
+						fitScore: 92,
+						summary: "Integradora B2B de usinas fotovoltaicas em MG.",
+						sourceUrl: "https://heliossolar.com.br",
+						sourceEngine: "tavily",
+						contact: {
+							name: "Lucas Andrade",
+							role: "Diretor Comercial",
+							phone: "31999991111",
+							email: "comercial@heliossolar.com.br",
+						},
+					},
+				],
+			}),
+		"POST /integrations/aisa/import": ({ body }) => {
+			const payload = (body ?? {}) as { leads?: unknown[] };
+			const count = Array.isArray(payload.leads) ? payload.leads.length : 1;
+			return {
+				status: 201,
+				...envelope({
+					importedCount: count,
+					skippedCount: 0,
+					items: [POOL_ITEMS[0]],
+					skipped: [],
+				}),
+			};
+		},
 	};
 }
 

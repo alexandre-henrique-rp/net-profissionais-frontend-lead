@@ -142,7 +142,7 @@ function IntegrationSettingsPage() {
 					Salvar configurações
 				</Button>
 				{saved ? (
-					<output className="rounded-md border border-emerald-500 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
+					<output className="rounded-md border border-emerald-500 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
 						Preferências locais salvas nesta demonstração.
 					</output>
 				) : null}

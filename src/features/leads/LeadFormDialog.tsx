@@ -297,7 +297,7 @@ export function LeadFormDialog({
 					</Field>
 				)}
 				{lookupStatus ? (
-					<output className="rounded-xl border border-emerald-500 bg-emerald-50/70 p-3 text-xs font-semibold text-emerald-800">
+					<output className="rounded-xl border border-emerald-500 bg-emerald-50/70 p-3 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-200">
 						✓ {lookupStatus}
 					</output>
 				) : null}

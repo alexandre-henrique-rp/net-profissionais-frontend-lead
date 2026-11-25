@@ -24,15 +24,15 @@ export function Tabs<T extends string>({
 }: TabsProps<T>) {
 	const trackStyle =
 		tone === "brand"
-			? "h-[42px] gap-0 bg-[#e5e7eb] p-[3px]"
-			: "h-[44px] gap-1.5 bg-slate-100 p-1";
+			? "h-[42px] gap-0 bg-ink-soft p-[3px]"
+			: "h-[44px] gap-1.5 bg-ink-soft p-1";
 	const tabStyle =
 		tone === "brand" ? "h-[34px] text-[12px]" : "h-[36px] text-[13px]";
 
 	return (
 		<div
 			role="tablist"
-			className={`flex items-center rounded-lg border border-slate-200 ${trackStyle} ${className}`}
+			className={`flex items-center rounded-lg border border-line ${trackStyle} ${className}`}
 		>
 			{items.map((item) => {
 				const active = item.value === value;
@@ -42,8 +42,8 @@ export function Tabs<T extends string>({
 						: "bg-accent-500 font-bold text-white shadow-xs";
 				const inactiveText =
 					tone === "brand"
-						? "font-semibold text-[#4d484d] hover:bg-white/60"
-						: "font-semibold text-slate-600 hover:bg-white/60";
+						? "font-semibold text-brand-ink hover:bg-surface/60"
+						: "font-semibold text-ink hover:bg-surface/60";
 
 				return (
 					<button

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { LeadFormDialog } from "../../features/leads/LeadFormDialog";
 import type { PoolLeadItem } from "../../features/leads-pool/data";
 import { ROLE_LABELS, type Session } from "../../lib/session";
+import { useColorScheme } from "../../lib/theme";
 import { Avatar } from "../ui/Avatar";
 
 export interface TopbarProps {
@@ -35,6 +36,7 @@ export function Topbar({ session, onMenuToggle }: TopbarProps) {
 	const searchRef = useRef<HTMLInputElement>(null);
 	const [createOpen, setCreateOpen] = useState(false);
 	const [notice, setNotice] = useState("");
+	const { scheme, toggle } = useColorScheme();
 
 	useEffect(() => {
 		function handleShortcut(event: KeyboardEvent) {
@@ -56,14 +58,14 @@ export function Topbar({ session, onMenuToggle }: TopbarProps) {
 
 	return (
 		<>
-			<header className="sticky top-0 z-30 flex h-14 w-full items-center border-b border-[#e2e8f0] bg-white px-4 sm:px-6">
+			<header className="sticky top-0 z-30 flex h-14 w-full items-center border-b border-line bg-surface px-4 sm:px-6">
 				{/* Seção da esquerda: 250px alinhada rigorosamente com a Sidebar */}
 				<div className="flex w-[250px] shrink-0 items-center gap-3">
 					<button
 						type="button"
 						aria-label="Abrir menu"
 						onClick={onMenuToggle}
-						className="flex size-9 items-center justify-center rounded-lg text-lg text-[#64748b] hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-[#2563eb] lg:hidden"
+						className="flex size-9 items-center justify-center rounded-lg text-lg text-ink-muted hover:bg-ink-soft hover:text-ink-strong focus-visible:outline-2 focus-visible:outline-primary-500 lg:hidden"
 					>
 						☰
 					</button>
@@ -83,17 +85,24 @@ export function Topbar({ session, onMenuToggle }: TopbarProps) {
 					<button
 						type="button"
 						onClick={() => setCreateOpen(true)}
-						className="inline-flex h-9 w-[116px] shrink-0 items-center justify-center rounded-[6px] bg-[#2563eb] text-xs font-bold text-white shadow-xs transition-colors hover:bg-[#1d4ed8] focus-visible:outline-2 focus-visible:outline-[#2563eb]"
+						className="inline-flex h-9 w-[116px] shrink-0 items-center justify-center rounded-[6px] bg-primary-500 text-xs font-bold text-white shadow-xs transition-colors hover:brightness-95 focus-visible:outline-2 focus-visible:outline-primary-500"
 					>
 						+ Novo Lead
 					</button>
 
-					{/* Botão ☀️ Light */}
+					{/* Botão de alternância de tema (Light / Dark) */}
 					<button
 						type="button"
-						className="hidden h-9 w-[80px] shrink-0 items-center justify-center rounded-[6px] border border-[#e2e8f0] bg-[#f1f5f9] text-xs font-semibold text-[#334155] transition-colors hover:bg-slate-200/80 sm:inline-flex"
+						aria-pressed={scheme === "dark"}
+						title={
+							scheme === "dark"
+								? "Alternar para tema claro"
+								: "Alternar para tema escuro"
+						}
+						onClick={toggle}
+						className="inline-flex h-9 shrink-0 items-center justify-center rounded-[6px] border border-line bg-ink-soft px-2.5 text-xs font-semibold text-ink-strong transition-colors hover:bg-line sm:w-[80px] sm:px-0"
 					>
-						☀️ Light
+						{scheme === "dark" ? "🌙 Dark" : "☀️ Light"}
 					</button>
 
 					{/* Campo de Busca Global Ctrl+K */}
@@ -103,7 +112,7 @@ export function Topbar({ session, onMenuToggle }: TopbarProps) {
 							type="search"
 							aria-label="Buscar lead por nome, razão social, CNPJ, WhatsApp"
 							placeholder="🔍 Buscar lead por nome, razão social, CNPJ, WhatsApp... [Ctrl+K]"
-							className="h-9 w-full rounded-[6px] border border-[#e2e8f0] bg-[#f8fafc] px-3.5 text-xs text-slate-800 outline-none placeholder:text-[#64748b] focus:border-[#2563eb] focus:bg-white"
+							className="h-9 w-full rounded-[6px] border border-line bg-canvas px-3.5 text-xs text-ink-strong outline-none placeholder:text-ink-muted focus:border-primary-500 focus:bg-surface"
 						/>
 					</div>
 				</div>
@@ -111,7 +120,7 @@ export function Topbar({ session, onMenuToggle }: TopbarProps) {
 				{/* Seção da direita: Chip Corporativo e Perfil */}
 				<div className="ml-auto flex items-center gap-4">
 					{/* Chip Corporativo (w=216px, h=36px) */}
-					<div className="hidden h-9 w-[216px] shrink-0 items-center justify-center rounded-[6px] border border-[#e2e8f0] bg-[#f1f5f9] text-xs font-semibold text-[#1e293b] sm:flex">
+					<div className="hidden h-9 w-[216px] shrink-0 items-center justify-center rounded-[6px] border border-line bg-ink-soft text-xs font-semibold text-ink-strong sm:flex">
 						🏢 Corporação: NetProfissional
 					</div>
 
@@ -119,7 +128,7 @@ export function Topbar({ session, onMenuToggle }: TopbarProps) {
 					<div className="flex h-9 items-center gap-2.5">
 						<Avatar name={session.name} tone="brand" size="sm" />
 						<div className="hidden text-left leading-tight sm:block">
-							<p className="text-[13px] font-bold text-[#0f172a]">
+							<p className="text-[13px] font-bold text-ink-strong">
 								{session.name}
 							</p>
 							<p className="text-[11px] font-semibold text-[#10b981]">
@@ -131,7 +140,7 @@ export function Topbar({ session, onMenuToggle }: TopbarProps) {
 			</header>
 
 			{notice ? (
-				<output className="fixed right-4 top-16 z-40 rounded-lg border border-emerald-500 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 shadow-md">
+				<output className="fixed right-4 top-16 z-40 rounded-lg border border-emerald-500 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 shadow-md dark:bg-emerald-950/95 dark:text-emerald-200">
 					{notice}
 				</output>
 			) : null}

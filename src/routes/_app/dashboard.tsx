@@ -292,7 +292,7 @@ function AdminBody({ data }: { data: AdminDashboard }) {
 						tone: "up",
 					}}
 					hint={`Ticket médio: ${formatCurrency(kpis.average_ticket)}`}
-					valueClassName="text-[#0284c7]"
+					valueClassName="text-info-500 dark:text-sky-400"
 				/>
 				<KpiCard
 					label="RECEITA GANHA (FECHADOS)"
@@ -302,7 +302,7 @@ function AdminBody({ data }: { data: AdminDashboard }) {
 						tone: "up",
 					}}
 					hint={`${formatNumber(kpis.leads_lost)} leads perdidos no período`}
-					valueClassName="text-[#059669]"
+					valueClassName="text-success-500 dark:text-emerald-400"
 				/>
 				<KpiCard
 					label="ALERTAS DE INATIVIDADE (>48H)"
@@ -313,12 +313,16 @@ function AdminBody({ data }: { data: AdminDashboard }) {
 							: { value: "✅ Nenhum lead parado", tone: "up" }
 					}
 					hint="Leads em carteira parados"
-					valueClassName="text-[#d97706]"
+					valueClassName="text-warning-500 dark:text-amber-400"
 					borderClassName={
-						kpis.inactivity_alerts > 0 ? "border-amber-300" : "border-line"
+						kpis.inactivity_alerts > 0
+							? "border-amber-300 dark:border-amber-600/60"
+							: "border-line"
 					}
 					bgClassName={
-						kpis.inactivity_alerts > 0 ? "bg-amber-50/20" : "bg-surface"
+						kpis.inactivity_alerts > 0
+							? "bg-amber-50/20 dark:bg-amber-950/25"
+							: "bg-surface"
 					}
 				/>
 			</section>
@@ -329,7 +333,7 @@ function AdminBody({ data }: { data: AdminDashboard }) {
 						<h2 className="text-[15px] font-bold text-ink-strong">
 							📊 Taxa de Conversão por Etapa do Funil (Kanban)
 						</h2>
-						<span className="inline-flex items-center rounded-full border border-emerald-500 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700">
+						<span className="inline-flex items-center rounded-full border border-emerald-500 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
 							Conversão global: {formatPercent(kpis.conversion_rate)}
 						</span>
 					</div>
@@ -423,7 +427,7 @@ function AdminBody({ data }: { data: AdminDashboard }) {
 											</p>
 										</div>
 									</div>
-									<span className="rounded-full border border-emerald-500 bg-emerald-50 px-3.5 py-1 text-[11px] font-bold text-emerald-600">
+									<span className="rounded-full border border-emerald-500 bg-emerald-50 px-3.5 py-1 text-[11px] font-bold text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-300">
 										{formatCurrency(person.total_value)}
 									</span>
 								</li>
@@ -492,7 +496,7 @@ function SellerBody({ data }: { data: SellerDashboard }) {
 					label="PIPELINE EM ANDAMENTO"
 					value={formatCurrency(kpis.my_pipeline_value)}
 					hint="Oportunidades abertas atribuídas a você"
-					valueClassName="text-[#0284c7]"
+					valueClassName="text-info-500 dark:text-sky-400"
 				/>
 				<KpiCard
 					label="VENDAS GANHAS"
@@ -502,17 +506,17 @@ function SellerBody({ data }: { data: SellerDashboard }) {
 						tone: "up",
 					}}
 					hint="Receita fechada no período"
-					valueClassName="text-emerald-600"
-					borderClassName="border-emerald-300"
-					bgClassName="bg-emerald-50/20"
+					valueClassName="text-emerald-600 dark:text-emerald-400"
+					borderClassName="border-emerald-300 dark:border-emerald-700/60"
+					bgClassName="bg-emerald-50/20 dark:bg-emerald-950/25"
 				/>
 				<KpiCard
 					label="TAREFAS PARA HOJE"
 					value={`${formatNumber(kpis.today_tasks)} de ${formatNumber(kpis.today_tasks_total)}`}
 					hint="Pendências e retornos do dia"
-					valueClassName="text-[#d97706]"
-					borderClassName="border-amber-300"
-					bgClassName="bg-amber-50/20"
+					valueClassName="text-warning-500 dark:text-amber-400"
+					borderClassName="border-amber-300 dark:border-amber-600/60"
+					bgClassName="bg-amber-50/20 dark:bg-amber-950/25"
 				/>
 			</section>
 
@@ -551,8 +555,8 @@ function SellerBody({ data }: { data: SellerDashboard }) {
 					)}
 				</Card>
 
-				<Card className="border-rose-200 bg-rose-50/20 p-5">
-					<h2 className="flex items-center gap-1.5 text-[14px] font-bold text-brand-600">
+				<Card className="border-rose-200 bg-rose-50/20 p-5 dark:border-rose-500/40 dark:bg-rose-950/25">
+					<h2 className="flex items-center gap-1.5 text-[14px] font-bold text-brand-600 dark:text-rose-400">
 						<span>🚨</span>
 						<span>Tarefas de hoje</span>
 					</h2>
@@ -569,13 +573,13 @@ function SellerBody({ data }: { data: SellerDashboard }) {
 							{today_tasks.map((task) => (
 								<div
 									key={task.tenant_lead_id}
-									className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-200 bg-surface p-3 shadow-xs"
+									className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-200 bg-surface p-3 shadow-xs dark:border-rose-500/40"
 								>
 									<div className="min-w-0">
 										<p className="text-[12px] font-bold text-ink-strong">
 											{displayText(task.company_name, "Lead sem nome")}
 										</p>
-										<p className="mt-0.5 text-[11px] font-semibold text-brand-600">
+										<p className="mt-0.5 text-[11px] font-semibold text-brand-600 dark:text-rose-400">
 											{task.reason}
 										</p>
 									</div>
@@ -588,8 +592,8 @@ function SellerBody({ data }: { data: SellerDashboard }) {
 					)}
 				</Card>
 
-				<Card className="border-amber-200 p-5 xl:col-span-2">
-					<h2 className="flex items-center gap-1.5 text-[14px] font-bold text-amber-700">
+				<Card className="border-amber-200 p-5 xl:col-span-2 dark:border-amber-600/50">
+					<h2 className="flex items-center gap-1.5 text-[14px] font-bold text-amber-700 dark:text-amber-300">
 						<span>🎂</span>
 						<span>Inteligência de Relacionamento: Datas Especiais</span>
 					</h2>
@@ -608,7 +612,7 @@ function SellerBody({ data }: { data: SellerDashboard }) {
 									key={`${entry.lead_id}-${entry.date_type}`}
 									className={`rounded-xl border p-3.5 ${
 										entry.is_today
-											? "border-amber-300 bg-amber-50/50"
+											? "border-amber-300 bg-amber-50/50 dark:border-amber-600/60 dark:bg-amber-950/35"
 											: "border-line bg-surface shadow-xs"
 									}`}
 								>
@@ -618,7 +622,7 @@ function SellerBody({ data }: { data: SellerDashboard }) {
 											? `• ${firstNonBlankText(entry.company_name)}`
 											: ""}
 									</p>
-									<p className="mt-1 text-[11px] font-bold text-amber-700">
+									<p className="mt-1 text-[11px] font-bold text-amber-700 dark:text-amber-300">
 										🎂 {entry.day_month} ·{" "}
 										{entry.is_today
 											? "é hoje!"
@@ -696,7 +700,7 @@ function CaptadorBody({ data }: { data: CaptadorDashboard }) {
 					label="ABORDADOS PELO VENDEDOR"
 					value={`${formatNumber(kpis.captured_claimed)} leads`}
 					hint={`🎯 ${formatPercent(approachRate)} de taxa de abordagem`}
-					valueClassName="text-[#0284c7]"
+					valueClassName="text-info-500 dark:text-sky-400"
 				/>
 				<KpiCard
 					label="VENDAS DAS SUAS CAPTAÇÕES"
@@ -706,17 +710,17 @@ function CaptadorBody({ data }: { data: CaptadorDashboard }) {
 						tone: "up",
 					}}
 					hint="Negócios fechados no período"
-					valueClassName="text-emerald-600"
-					borderClassName="border-emerald-300"
-					bgClassName="bg-emerald-50/20"
+					valueClassName="text-emerald-600 dark:text-emerald-400"
+					borderClassName="border-emerald-300 dark:border-emerald-700/60"
+					bgClassName="bg-emerald-50/20 dark:bg-emerald-950/25"
 				/>
 				<KpiCard
 					label="AGUARDANDO NO POOL"
 					value={`${formatNumber(kpis.captured_in_pool)} leads`}
 					hint="⏳ Sem vendedor atribuído ainda"
-					valueClassName="text-[#d97706]"
-					borderClassName="border-amber-300"
-					bgClassName="bg-amber-50/20"
+					valueClassName="text-warning-500 dark:text-amber-400"
+					borderClassName="border-amber-300 dark:border-amber-600/60"
+					bgClassName="bg-amber-50/20 dark:bg-amber-950/25"
 				/>
 			</section>
 

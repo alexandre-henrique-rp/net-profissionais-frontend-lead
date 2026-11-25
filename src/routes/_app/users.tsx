@@ -250,7 +250,7 @@ function UsuariosPage() {
 				}
 			/>
 			<div className="mb-5 rounded-xl border border-warning-200 bg-warning-50/70 px-5 py-3.5 shadow-xs">
-				<p className="text-[12px] font-bold text-amber-800">
+				<p className="text-[12px] font-bold text-amber-800 dark:text-amber-300">
 					🔐 CONTROLE EXCLUSIVO DO ADMINISTRADOR DO TENANT
 				</p>
 				<p className="mt-1 text-[11px] text-ink-muted leading-relaxed">

@@ -55,7 +55,7 @@ function ActivateAccountPage() {
 		<PublicShell hero={<LoginHero />}>
 			<form
 				onSubmit={handleSubmit}
-				className="w-full max-w-[480px] overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xl"
+				className="w-full max-w-[480px] overflow-hidden rounded-2xl border border-line bg-surface shadow-xl"
 			>
 				{/* Barra vermelha de topo do Penpot Tela 01-C-L */}
 				<div className="h-1.5 w-full bg-brand-500" />
@@ -67,24 +67,24 @@ function ActivateAccountPage() {
 								NP
 							</div>
 							<div>
-								<span className="block text-base font-bold tracking-tight text-slate-900 leading-none">
+								<span className="block text-base font-bold tracking-tight text-ink-strong leading-none">
 									NETProfissional
 								</span>
-								<span className="block text-[10px] font-semibold text-slate-400 leading-tight">
+								<span className="block text-[10px] font-semibold text-ink-subtle leading-tight">
 									Gerador de Leads
 								</span>
 							</div>
 						</div>
-						<span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700">
+						<span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 dark:border-emerald-700/60 dark:bg-emerald-950/60 dark:text-emerald-300">
 							⏳ Convite 48h
 						</span>
 					</div>
 
 					<div>
-						<h2 className="text-2xl font-bold tracking-tight text-slate-900">
+						<h2 className="text-2xl font-bold tracking-tight text-ink-strong">
 							Ativar conta
 						</h2>
-						<p className="mt-1 text-[13px] text-slate-500 leading-relaxed">
+						<p className="mt-1 text-[13px] text-ink-muted leading-relaxed">
 							Crie uma senha forte para concluir a ativação do seu acesso
 							corporativo.
 						</p>
@@ -106,7 +106,9 @@ function ActivateAccountPage() {
 							<li
 								key={rule.label}
 								className={`flex items-center gap-1.5 font-medium ${
-									rule.valid ? "text-emerald-600" : "text-slate-400"
+									rule.valid
+										? "text-emerald-600 dark:text-emerald-400"
+										: "text-ink-subtle"
 								}`}
 							>
 								<span aria-hidden className="font-bold">
@@ -129,7 +131,10 @@ function ActivateAccountPage() {
 					</Field>
 
 					{confirmation && !matches ? (
-						<p role="alert" className="-mt-3 text-xs font-bold text-brand-600">
+						<p
+							role="alert"
+							className="-mt-3 text-xs font-bold text-brand-600 dark:text-rose-300"
+						>
 							As senhas não correspondem.
 						</p>
 					) : null}
@@ -137,7 +142,7 @@ function ActivateAccountPage() {
 					{activate.isError ? (
 						<p
 							role="alert"
-							className="rounded-xl border border-brand-500/30 bg-brand-50 p-3.5 text-xs font-semibold text-brand-600"
+							className="rounded-xl border border-brand-500/30 bg-brand-50 p-3.5 text-xs font-semibold text-brand-600 dark:text-rose-300"
 						>
 							{activate.error instanceof Error
 								? activate.error.message
@@ -158,19 +163,19 @@ function ActivateAccountPage() {
 					<div className="flex justify-center">
 						<Link
 							to="/login"
-							className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline"
+							className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
 						>
 							Voltar para o login
 						</Link>
 					</div>
 
-					<div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-3.5 flex items-start gap-3">
+					<div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-3.5 flex items-start gap-3 dark:border-emerald-700/60 dark:bg-emerald-950/50">
 						<span className="text-base leading-none">🔒</span>
 						<div>
-							<p className="text-xs font-bold text-emerald-800">
+							<p className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
 								Proteção de Credenciais
 							</p>
-							<p className="mt-0.5 text-[11px] leading-relaxed text-emerald-700">
+							<p className="mt-0.5 text-[11px] leading-relaxed text-emerald-700 dark:text-emerald-400">
 								Senhas criptografadas com Argon2id de alta resistência.
 							</p>
 						</div>

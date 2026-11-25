@@ -8,6 +8,7 @@ import { TextInput } from "#/components/ui/Field";
 import { Tabs } from "#/components/ui/Tabs";
 import { ApiError, apiFetch } from "#/lib/api";
 import { sessionQueryKey } from "#/lib/session";
+import { useColorScheme } from "#/lib/theme";
 
 type Perfil = "administrador" | "usuario";
 
@@ -37,6 +38,7 @@ function LoginPage() {
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
+	const { scheme } = useColorScheme();
 
 	const login = useMutation({
 		mutationFn: (credentials: { email: string; password: string }) =>
@@ -62,7 +64,7 @@ function LoginPage() {
 		<PublicShell hero={<LoginHero />}>
 			<form
 				onSubmit={handleSubmit}
-				className="relative h-[680px] w-full max-w-[500px] overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-[0_10px_28px_rgba(0,0,0,0.14)]"
+				className="relative h-[680px] w-full max-w-[500px] overflow-hidden rounded-2xl border border-line-strong bg-surface shadow-[0_10px_28px_rgba(0,0,0,0.14)]"
 			>
 				<div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-br from-brand-500 to-brand-600" />
 
@@ -75,22 +77,22 @@ function LoginPage() {
 							className="h-6 w-8 sm:h-8 sm:w-10"
 						/>
 						<img
-							src="/NP08-light.svg"
+							src={scheme === "dark" ? "/NP08-dark.svg" : "/NP08-light.svg"}
 							alt="NETProfissional"
 							className="h-5 w-[116px] object-contain object-left sm:h-[25px] sm:w-[158px]"
 						/>
 					</div>
-					<span className="inline-flex h-[26px] w-[110px] items-center justify-center rounded-full border border-amber-600 bg-amber-100 px-2 text-[9px] font-semibold text-[#d97706] sm:px-[10px] sm:text-[10px]">
+					<span className="inline-flex h-[26px] w-[110px] items-center justify-center rounded-full border border-amber-600 bg-amber-100 px-2 text-[9px] font-semibold text-warning-500 sm:px-[10px] sm:text-[10px] dark:bg-amber-950/60 dark:text-amber-300">
 						🔒 Acesso Seguro
 					</span>
 				</div>
 
 				<div className="mx-6 pt-[92px] sm:mx-[47px]">
 					<div>
-						<h2 className="text-2xl font-normal leading-[29px] tracking-tight text-slate-800">
+						<h2 className="text-2xl font-normal leading-[29px] tracking-tight text-ink-strong">
 							Bem-vindo de volta
 						</h2>
-						<p className="mt-[3px] text-[13px] leading-4 text-slate-500">
+						<p className="mt-[3px] text-[13px] leading-4 text-ink-muted">
 							Acesse o painel comercial da NetProfissional
 						</p>
 					</div>
@@ -108,7 +110,7 @@ function LoginPage() {
 
 					<div className="mt-[19px]">
 						<label htmlFor="email-input" className="block">
-							<span className="mb-2 block text-[12px] font-bold leading-[14px] text-slate-800">
+							<span className="mb-2 block text-[12px] font-bold leading-[14px] text-ink-strong">
 								E-mail Corporativo
 							</span>
 							<TextInput
@@ -128,13 +130,13 @@ function LoginPage() {
 						<div className="mb-2 flex items-center justify-between">
 							<label
 								htmlFor="senha-input"
-								className="text-xs font-bold leading-[14px] text-slate-800"
+								className="text-xs font-bold leading-[14px] text-ink-strong"
 							>
 								Senha de Acesso
 							</label>
 							<Link
 								to="/recuperar-senha"
-								className="text-xs font-bold leading-[14px] text-sky-600 hover:text-sky-700 hover:underline"
+								className="text-xs font-bold leading-[14px] text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
 							>
 								Esqueceu a senha?
 							</Link>
@@ -154,18 +156,18 @@ function LoginPage() {
 					{errorMessage ? (
 						<p
 							role="alert"
-							className="mt-4 rounded-lg border border-brand-500/30 bg-brand-50 p-3 text-xs font-semibold text-brand-600"
+							className="mt-4 rounded-lg border border-brand-500/30 bg-brand-50 p-3 text-xs font-semibold text-brand-600 dark:text-rose-300"
 						>
 							{errorMessage}
 						</p>
 					) : null}
 
-					<div className="mt-5 flex h-[62px] items-start rounded-lg border border-emerald-600 bg-emerald-100 px-[15px] py-[9px]">
+					<div className="mt-5 flex h-[62px] items-start rounded-lg border border-emerald-600 bg-emerald-100 px-[15px] py-[9px] dark:bg-emerald-950/50">
 						<div>
-							<p className="text-[11px] font-bold leading-[14px] text-emerald-700">
+							<p className="text-[11px] font-bold leading-[14px] text-emerald-700 dark:text-emerald-300">
 								🔒 Conexão Criptografada e Segura
 							</p>
-							<p className="mt-0.5 text-[11px] leading-[14px] text-[#4d484d]">
+							<p className="mt-0.5 text-[11px] leading-[14px] text-brand-ink">
 								Ambiente protegido por protocolo SSL/TLS com armazenamento
 								seguro de credenciais.
 							</p>
